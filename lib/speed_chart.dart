@@ -1,3 +1,3 @@
 library flutter_speed_chart;
 
-export 'line_chart.dart' hide LineSeriesX;
+export 'speed_line_chart.dart' hide LineSeriesX;

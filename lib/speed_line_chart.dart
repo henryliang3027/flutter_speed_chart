@@ -14,19 +14,19 @@ class LineSeriesX {
   final List<int> startIndexes;
 }
 
-class LineChart extends StatefulWidget {
+class SpeedLineChart extends StatefulWidget {
   final List<LineSeries> lineSeriesCollection;
 
-  const LineChart({
+  const SpeedLineChart({
     Key? key,
     required this.lineSeriesCollection,
   }) : super(key: key);
 
   @override
-  LineChartState createState() => LineChartState();
+  SpeedLineChartState createState() => SpeedLineChartState();
 }
 
-class LineChartState extends State<LineChart> {
+class SpeedLineChartState extends State<SpeedLineChart> {
   bool _showTooltip = false;
 
   double _longPressX = 0.0;
