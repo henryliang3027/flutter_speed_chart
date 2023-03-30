@@ -23,10 +23,10 @@ class SpeedLineChart extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  SpeedLineChartState createState() => SpeedLineChartState();
+  _SpeedLineChartState createState() => _SpeedLineChartState();
 }
 
-class SpeedLineChartState extends State<SpeedLineChart> {
+class _SpeedLineChartState extends State<SpeedLineChart> {
   bool _showTooltip = false;
 
   double _longPressX = 0.0;
