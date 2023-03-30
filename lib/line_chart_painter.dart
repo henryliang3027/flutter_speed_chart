@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/date_value_pair.dart';
 import 'package:flutter_speed_chart/line_series.dart';
-import 'package:flutter_speed_chart/line_series_x.dart';
+import 'package:flutter_speed_chart/speed_line_chart.dart';
 import 'package:intl/intl.dart';
 
 class LineChartPainter extends CustomPainter {

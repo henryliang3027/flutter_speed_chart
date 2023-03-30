@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/line_chart_painter.dart';
 import 'package:flutter_speed_chart/line_series.dart';
-import 'package:flutter_speed_chart/line_series_x.dart';
+
+class LineSeriesX {
+  const LineSeriesX({
+    required this.lineSeries,
+    required this.dataMap,
+    required this.startIndexes,
+  });
+
+  final LineSeries lineSeries;
+  final Map<DateTime, double?> dataMap;
+  final List<int> startIndexes;
+}
 
 class SpeedLineChart extends StatefulWidget {
   final List<LineSeries> lineSeriesCollection;
