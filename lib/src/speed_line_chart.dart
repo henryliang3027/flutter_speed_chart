@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'line_series.dart';
-import 'line_chart_painter.dart';
+import 'package:flutter_speed_chart/src/line_chart_painter.dart';
+import 'package:flutter_speed_chart/src/line_series.dart';
 
 class LineSeriesX {
   const LineSeriesX({
