@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_chart/src/date_value_pair.dart';
 import 'package:flutter_speed_chart/src/line_chart_painter.dart';
 import 'package:flutter_speed_chart/src/line_series.dart';
 
 class LineSeriesX {
   const LineSeriesX({
-    required this.lineSeries,
+    required this.name,
+    required this.color,
+    required this.dataList,
     required this.dataMap,
     required this.startIndexes,
   });
 
-  final LineSeries lineSeries;
+  final String name;
+  final Color color;
+  final List<DateValuePair> dataList;
   final Map<DateTime, double?> dataMap;
   final List<int> startIndexes;
 }
@@ -69,7 +74,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       }
 
       lineSeriesXCollection.add(LineSeriesX(
-        lineSeries: lineSeries,
+        name: lineSeries.name,
+        color: lineSeries.color,
+        dataList: lineSeries.dataList, // reference
         dataMap: dataMap,
         startIndexes: startIndexes,
       ));
@@ -117,7 +124,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     _longestLineSeriesX = _lineSeriesXCollection
         .map((lineSeriesX) => lineSeriesX)
         .reduce((value, element) =>
-            value.dataMap.length > element.dataMap.length ? value : element);
+            value.dataList.length > element.dataList.length ? value : element);
   }
 
   @override

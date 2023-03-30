@@ -4,8 +4,6 @@ import 'package:flutter_speed_chart/src/date_value_pair.dart';
 import 'package:flutter_speed_chart/src/speed_line_chart.dart';
 import 'package:intl/intl.dart';
 
-import 'line_series.dart';
-
 class LineChartPainter extends CustomPainter {
   LineChartPainter({
     required this.lineSeriesXCollection,
@@ -99,8 +97,7 @@ class LineChartPainter extends CustomPainter {
     List<Map<String, double?>> valueMapList = [];
     for (LineSeriesX lineSeriesX in lineSeriesXCollection) {
       Map<String, double?> valueMap = {};
-      LineSeries lineSeries = lineSeriesX.lineSeries;
-      valueMap[lineSeries.name] = lineSeriesX.dataMap[dateTime];
+      valueMap[lineSeriesX.name] = lineSeriesX.dataMap[dateTime];
       valueMapList.add(valueMap);
     }
     // valueMapList = [{'name': value},{'name': value}]
@@ -136,11 +133,10 @@ class LineChartPainter extends CustomPainter {
     required double xStep,
   }) {
     int xScalePoints = size.width * scale ~/ 80;
-    double xInterval =
-        longestLineSeriesX.lineSeries.dataList.length / xScalePoints;
+    double xInterval = longestLineSeriesX.dataList.length / xScalePoints;
     for (int i = 0; i < xScalePoints; i++) {
       double scaleX = (longestLineSeriesX
-              .lineSeries.dataList[(i * xInterval).round()].dateTime
+              .dataList[(i * xInterval).round()].dateTime
               .difference(minDate)
               .inSeconds
               .toDouble() *
@@ -151,8 +147,8 @@ class LineChartPainter extends CustomPainter {
           Offset(scaleX, 0), Offset(scaleX, size.height), _gridPaint);
 
       // Draw X-Axis scale points
-      DateTime dateTime = longestLineSeriesX
-          .lineSeries.dataList[(i * xInterval).round()].dateTime;
+      DateTime dateTime =
+          longestLineSeriesX.dataList[(i * xInterval).round()].dateTime;
       String date = DateFormat('MM/dd').format(dateTime);
 
       String time = DateFormat('HH:mm:ss').format(dateTime);
@@ -284,8 +280,7 @@ class LineChartPainter extends CustomPainter {
     textY = textY + 2;
 
     for (int i = 1; i < tips.length; i++) {
-      Paint circlePaint = Paint()
-        ..color = lineSeriesXCollection[i - 1].lineSeries.color;
+      Paint circlePaint = Paint()..color = lineSeriesXCollection[i - 1].color;
       Offset center = Offset(textX + 4 - adjustedTextX, textY + 13 * (i + 1));
       double radius = 4;
       canvas.drawCircle(center, radius, circlePaint);
@@ -311,12 +306,12 @@ class LineChartPainter extends CustomPainter {
     required double yStep,
   }) {
     for (LineSeriesX lineSeriesX in lineSeriesXCollection) {
-      List<DateValuePair> data = lineSeriesX.lineSeries.dataList;
+      List<DateValuePair> data = lineSeriesX.dataList;
       List<int> startIndex = lineSeriesX.startIndexes;
       Path linePath = Path();
 
       Paint linePaint = Paint()
-        ..color = lineSeriesX.lineSeries.color
+        ..color = lineSeriesX.color
         ..strokeWidth = 2.0
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
