@@ -15,18 +15,24 @@ and the Flutter guide for
 
 <h4 align="left">
 1. Draw more than one group of line series in a line chart.
+</h4>
+<h4 align="left">
 2. Horizontal scaling (pinch in / pinch out)
+</h4>
+<h4 align="left">
 3. Horizontal panning
+</h4>
+<h4 align="left">
 4. Draw a trackball containing a vertical line and corresponding data point on a long press event.
 </h4>
 
 Refer to my video on Youtube demo : https://www.youtube.com/shorts/kRZtj3cN9EQ.
 
 <p align="center">
- <img src="https://cdn-images-1.medium.com/max/1600/1*yzVR8Yj3C0LKBJ_9mKvi4w.png" width="600" height="300">  
+ <img src="https://cdn-images-1.medium.com/max/1600/1*yzVR8Yj3C0LKBJ_9mKvi4w.png" width="600" height="400">  
 </p>
 <p align="center">
- <img src="https://cdn-images-1.medium.com/max/1600/1*-jyZKMlJm81FYnCtYzy6BQ.png" width="600" height="300">  
+ <img src="https://cdn-images-1.medium.com/max/1600/1*-jyZKMlJm81FYnCtYzy6BQ.png" width="600" height="400">  
 </p>
 
 
