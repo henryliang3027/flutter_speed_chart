@@ -39,6 +39,36 @@ Refer to my video on Youtube demo : https://www.youtube.com/shorts/kRZtj3cN9EQ.
 ## Usage
 
 <h4 align="left">
+Prepare data points
+</h4>
+
+```dart
+LineSeries _getChartData({
+    required List data,
+    required Color color,
+    required String name,
+}) {
+    List<DateValuePair> dataList = [];
+    for (int i = 0; i < data.length; i++) {
+        var d = data[i];
+        DateTime dateTime = DateTime.parse(d['time'].toString());
+        double? value =
+            d['value'] == 'null' ? null : double.parse(d['value'].toString());
+
+        dataList.add(DateValuePair(dateTime: dateTime, value: value));
+    }
+
+    LineSeries lineSeries = LineSeries(
+        name: name,
+        dataList: dataList,
+        color: color,
+    );
+
+    return lineSeries;
+}
+```
+
+<h4 align="left">
 Create a single line chart
 </h4>
 
