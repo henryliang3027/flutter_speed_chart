@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/src/date_value_pair.dart';
+import 'package:flutter_speed_chart/src/legend.dart';
 import 'package:flutter_speed_chart/src/line_chart_painter.dart';
 import 'package:flutter_speed_chart/src/line_series.dart';
 
@@ -21,10 +22,14 @@ class LineSeriesX {
 
 class SpeedLineChart extends StatefulWidget {
   final List<LineSeries> lineSeriesCollection;
+  final String title;
+  final bool showLegend;
 
   const SpeedLineChart({
     Key? key,
     required this.lineSeriesCollection,
+    this.title = '',
+    this.showLegend = true,
   }) : super(key: key);
 
   @override
@@ -84,11 +89,49 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     return lineSeriesXCollection;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _lineSeriesXCollection = _getLineSeriesXCollection();
+  double getMaximumYAxisValue(
+      {required double tempMaxValue, required double tempMinValue}) {
+    double maximumYAxisValue = 0.0;
 
+    // in case of negative value
+    // -2 is to remove decimal point and any following digit
+    int factor = tempMaxValue.toString().replaceFirst('-', '').length - 2;
+
+    if ((tempMaxValue - tempMinValue).abs() >= 1000) {
+      maximumYAxisValue = tempMaxValue + 100 * (factor + 10);
+    } else if ((tempMaxValue - tempMinValue).abs() >= 100) {
+      maximumYAxisValue = tempMaxValue + 100 * (factor + 2);
+    } else if ((tempMaxValue - tempMinValue).abs() >= 10) {
+      maximumYAxisValue = tempMaxValue + 10 * factor;
+    } else {
+      maximumYAxisValue = tempMaxValue + (factor + 1);
+    }
+
+    return maximumYAxisValue;
+  }
+
+  double getMinimumYAxisValue(
+      {required double tempMaxValue, required double tempMinValue}) {
+    double minimumYAxisValue = 0.0;
+
+    // in case of negative values
+    // -2 is to remove decimal point and any following digit
+    int factor = tempMinValue.toString().replaceFirst('-', '').length - 2;
+
+    if ((tempMaxValue - tempMinValue).abs() >= 1000) {
+      minimumYAxisValue = tempMinValue - 100 * (factor + 10);
+    } else if ((tempMaxValue - tempMinValue).abs() >= 100) {
+      minimumYAxisValue = tempMinValue - 100 * (factor + 2);
+    } else if ((tempMaxValue - tempMinValue).abs() >= 10) {
+      minimumYAxisValue = tempMinValue - 10 * factor;
+    } else {
+      minimumYAxisValue = tempMinValue - (factor + 1);
+    }
+
+    return minimumYAxisValue;
+  }
+
+  void setMinValueAndMaxValue() {
     List<double?> allValues = _lineSeriesXCollection
         .expand((lineSeries) => lineSeries.dataMap.values)
         .toList();
@@ -98,33 +141,75 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     List<double?> allNonNullValues = [];
     allNonNullValues.addAll(allValues);
 
+    double tempMinValue = 0.0;
+    double tempMaxValue = 0.0;
+
+    if (allNonNullValues.isNotEmpty) {
+      tempMinValue = allNonNullValues
+          .map((value) => value)
+          .reduce((value, element) => value! < element! ? value : element)!;
+
+      tempMaxValue = allNonNullValues
+          .map((value) => value)
+          .reduce((value, element) => value! > element! ? value : element)!;
+    }
+
+    // if (widget.makrers.isNotEmpty) {
+    //   List<double> markerValues = [];
+
+    //   for (Marker marker in widget.makrers) {
+    //     markerValues.add(marker.value);
+    //   }
+
+    //   tempMinValue = [tempMinValue, ...markerValues]
+    //       .map((value) => value)
+    //       .reduce((value, element) => value < element ? value : element);
+
+    //   tempMaxValue = [tempMaxValue, ...markerValues]
+    //       .map((value) => value)
+    //       .reduce((value, element) => value > element ? value : element);
+    // }
+
+    _minValue = getMinimumYAxisValue(
+      tempMaxValue: tempMaxValue,
+      tempMinValue: tempMinValue,
+    );
+    _maxValue = getMaximumYAxisValue(
+      tempMaxValue: tempMaxValue,
+      tempMinValue: tempMinValue,
+    );
+  }
+
+  void setMinDateAndMaxDate() {
     List<DateTime> allDateTimes = _lineSeriesXCollection
         .expand((lineSeries) => lineSeries.dataMap.keys)
         .toList();
-
-    _minValue = allNonNullValues
-            .map((value) => value)
-            .reduce((value, element) => value! < element! ? value : element)! -
-        10;
-    _maxValue = allNonNullValues
-            .map((value) => value)
-            .reduce((value, element) => value! > element! ? value : element)! +
-        10;
-
     _minDate = allDateTimes
         .map((dateTime) => dateTime)
         .reduce((value, element) => value.isBefore(element) ? value : element);
     _maxDate = allDateTimes
         .map((dateTime) => dateTime)
         .reduce((value, element) => value.isAfter(element) ? value : element);
+  }
 
+  void setXRangeAndYRange() {
     _xRange = _maxDate.difference(_minDate).inSeconds.toDouble();
     _yRange = _maxValue - _minValue;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _lineSeriesXCollection = _getLineSeriesXCollection();
 
     _longestLineSeriesX = _lineSeriesXCollection
         .map((lineSeriesX) => lineSeriesX)
         .reduce((value, element) =>
             value.dataList.length > element.dataList.length ? value : element);
+
+    setMinValueAndMaxValue();
+    setMinDateAndMaxDate();
+    setXRangeAndYRange();
   }
 
   @override
@@ -199,27 +284,48 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
           _longPressX = details.localPosition.dx - _leftOffset;
         });
       },
-      child: CustomPaint(
-        size: Size(
-          widgetWidth,
-          widgetHeight,
-        ),
-        painter: LineChartPainter(
-          lineSeriesXCollection: _lineSeriesXCollection,
-          longestLineSeriesX: _longestLineSeriesX,
-          showTooltip: _showTooltip,
-          longPressX: _longPressX,
-          leftOffset: _leftOffset,
-          rightOffset: _rightOffset,
-          offset: _offset,
-          scale: _scale,
-          minValue: _minValue,
-          maxValue: _maxValue,
-          minDate: _minDate,
-          maxDate: _maxDate,
-          xRange: _xRange,
-          yRange: _yRange,
-        ),
+      child: Column(
+        children: [
+          widget.title.isNotEmpty
+              ? Text(
+                  widget.title,
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w400,
+                  ),
+                )
+              : Container(),
+          CustomPaint(
+            size: Size(
+              widgetWidth,
+              widgetHeight,
+            ),
+            painter: LineChartPainter(
+              lineSeriesXCollection: _lineSeriesXCollection,
+              longestLineSeriesX: _longestLineSeriesX,
+              showTooltip: _showTooltip,
+              longPressX: _longPressX,
+              leftOffset: _leftOffset,
+              rightOffset: _rightOffset,
+              offset: _offset,
+              scale: _scale,
+              minValue: _minValue,
+              maxValue: _maxValue,
+              minDate: _minDate,
+              maxDate: _maxDate,
+              xRange: _xRange,
+              yRange: _yRange,
+            ),
+          ),
+          const SizedBox(
+            height: 40.0,
+          ),
+          widget.showLegend
+              ? Legend(
+                  lineSeriesXCollection: _lineSeriesXCollection,
+                )
+              : Container(),
+        ],
       ),
     );
   }
