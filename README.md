@@ -26,7 +26,7 @@ and the Flutter guide for
 4. Draw a trackball containing a vertical line and corresponding data point on a long press event.
 </h4>
 
-Check to my demo video : https://www.youtube.com/shorts/kRZtj3cN9EQ.
+Check my demo video : https://www.youtube.com/shorts/kRZtj3cN9EQ.
 
 <p align="center">
  <img src="https://cdn-images-1.medium.com/max/1600/1*yzVR8Yj3C0LKBJ_9mKvi4w.png" width="600" height="400">  
