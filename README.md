@@ -39,7 +39,7 @@ Refer to my video on Youtube demo : https://www.youtube.com/shorts/kRZtj3cN9EQ.
 ## Usage
 
 <h4 align="left">
-create a single line chart
+Create a single line chart
 </h4>
 
 ```dart
@@ -65,7 +65,7 @@ SpeedLineChart(
 
 
 <h4 align="left">
-create a multiple line char
+Create a multiple line chart
 </h4>
 
 ```dart
