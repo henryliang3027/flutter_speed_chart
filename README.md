@@ -25,15 +25,63 @@ start using the package.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+create a single line chart
 
 ```dart
-const like = 'sample';
+
+List<LineSeries> lineSeriesCollection = [
+    _getChartData(
+        data: [
+            {"time": "2022-09-16 00:41:38", "value": "12.0"},
+            {"time": "2022-09-16 00:51:39", "value": "23.0"},
+            {"time": "2022-09-16 01:01:38", "value": "65.6"},
+        ],
+        color: Colors.red,
+        name: 'Line0',
+        ),
+    ]
+
+SpeedLineChart(
+    lineSeriesCollection: _lineSeriesCollection0,
+    title: _lineSeriesCollection0[0].name,
+    showLegend: false,
+),
+```
+
+create a multiple line chart
+
+```dart
+
+List<LineSeries> lineSeriesCollection1 = [
+    _getChartData(
+        data: [
+            {"time": "2022-09-16 00:41:38", "value": "12.0"},
+            {"time": "2022-09-16 00:51:39", "value": "23.0"},
+            {"time": "2022-09-16 01:01:38", "value": "65.6"},
+        ],
+        color: Colors.red,
+        name: 'Line0',
+        ),
+    _getChartData(
+        data: [
+            {"time": "2022-09-16 00:41:38", "value": "12.0"},
+            {"time": "2022-09-16 00:51:39", "value": "23.0"},
+            {"time": "2022-09-16 01:01:38", "value": "65.6"},
+        ],
+        color: Colors.red,
+        name: 'Line0',
+        ),
+    ]
+
+SpeedLineChart(
+    lineSeriesCollection: _lineSeriesCollection1,
+    title: _lineSeriesCollection0[0].name,
+    showLegend: false,
+),
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+for more implement detail, refer to my Medium articles: 
+([test1]https://medium.com/@henryliang3027/create-your-professional-widget-in-flutter-multiple-line-chart-part-1-7ad201c76899)
+([test2]https://medium.com/@henryliang3027/create-your-professional-widget-in-flutter-multiple-line-chart-part-2-8590dd683ccf)
