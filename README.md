@@ -101,9 +101,6 @@ SpeedLineChart(
 ## Additional information
 
 For more implement detail, refer to my Medium articles: 
-<h4 align="left">
 [Create your professional widget in Flutter — Multiple Line Chart (Part.1)](https://medium.com/@henryliang3027/create-your-professional-widget-in-flutter-multiple-line-chart-part-1-7ad201c76899)
-</h4>
-<h4 align="left">
+
 [Create your professional widget in Flutter — Multiple Line Chart (Part.2)](https://medium.com/@henryliang3027/create-your-professional-widget-in-flutter-multiple-line-chart-part-2-8590dd683ccf)
-</h4>
