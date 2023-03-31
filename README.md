@@ -86,8 +86,8 @@ List<LineSeries> lineSeriesCollection1 = [
             {"time": "2022-09-16 00:51:39", "value": "23.0"},
             {"time": "2022-09-16 01:01:38", "value": "65.6"},
         ],
-        color: Colors.red,
-        name: 'Line0',
+        color: Colors.orange,
+        name: 'Line1',
         ),
     ]
 
