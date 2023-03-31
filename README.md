@@ -11,21 +11,30 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages). 
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+<h4 align="left">
+1. Draw more than one group of line series in a line chart.
+2. Horizontal scaling (pinch in / pinch out)
+3. Horizontal panning
+4. Draw a trackball containing a vertical line and corresponding data point on a long press event.
+</h4>
 
-## Getting started
+Refer to my video on Youtube demo : https://www.youtube.com/shorts/kRZtj3cN9EQ.
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+<p align="center">
+ <img src="https://cdn-images-1.medium.com/max/1600/1*yzVR8Yj3C0LKBJ_9mKvi4w.png" width="600" height="300">  
+</p>
+<p align="center">
+ <img src="https://cdn-images-1.medium.com/max/1600/1*-jyZKMlJm81FYnCtYzy6BQ.png" width="600" height="300">  
+</p>
+
 
 ## Usage
 
+<h4 align="left">
 create a single line chart
+</h4>
 
 ```dart
 
@@ -48,7 +57,10 @@ SpeedLineChart(
 ),
 ```
 
-create a multiple line chart
+
+<h4 align="left">
+create a multiple line char
+</h4>
 
 ```dart
 
@@ -82,6 +94,6 @@ SpeedLineChart(
 
 ## Additional information
 
-for more implement detail, refer to my Medium articles: 
-([test1]https://medium.com/@henryliang3027/create-your-professional-widget-in-flutter-multiple-line-chart-part-1-7ad201c76899)
-([test2]https://medium.com/@henryliang3027/create-your-professional-widget-in-flutter-multiple-line-chart-part-2-8590dd683ccf)
+For more implement detail, refer to my Medium articles: 
+[Create your professional widget in Flutter — Multiple Line Chart (Part.1)](https://medium.com/@henryliang3027/create-your-professional-widget-in-flutter-multiple-line-chart-part-1-7ad201c76899)
+[Create your professional widget in Flutter — Multiple Line Chart (Part.2)](https://medium.com/@henryliang3027/create-your-professional-widget-in-flutter-multiple-line-chart-part-2-8590dd683ccf)
