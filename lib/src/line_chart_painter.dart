@@ -151,7 +151,7 @@ class LineChartPainter extends CustomPainter {
       // Draw X-Axis scale points
       DateTime dateTime =
           longestLineSeriesX.dataList[(i * xInterval).round()].dateTime;
-      String date = DateFormat('MM/dd').format(dateTime);
+      String date = DateFormat('yy-MM-dd').format(dateTime);
 
       String time = DateFormat('HH:mm:ss').format(dateTime);
 
