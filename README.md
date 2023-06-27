@@ -202,9 +202,59 @@ canvas.translate(leftOffset + offset, 0);
 ```
 
 
-算出y軸的每一個單位的長度： ```double xStep = (size.width * scale - rightOffset) / xRange;```  
+算出x軸的每一個單位的長度： ```double xStep = (size.width * scale - rightOffset) / xRange;```  
 決定要畫幾個刻度在x軸上： ```int xScalePoints = size.width * scale ~/ 80;```  
 算出資料點的取直間隔： ```double xInterval = (longestLineSeriesX.dataList.length - 1) / xScalePoints;```  
+使用迴圈畫出所有刻度：  
+```dart
+for (int i = 0; i < xScalePoints; i++) {
+  double scaleX = (longestLineSeriesX
+          .dataList[(i * xInterval).round()].dateTime
+          .difference(minDate)
+          .inSeconds
+          .toDouble() *
+      xStep);
+
+  // Draw vertical grid line
+  canvas.drawLine(
+      Offset(scaleX, 0), Offset(scaleX, size.height), _gridPaint);
+
+  // Draw X-Axis scale points
+  DateTime dateTime =
+      longestLineSeriesX.dataList[(i * xInterval).round()].dateTime;
+  String date = DateFormat('yy-MM-dd').format(dateTime);
+
+  String time = DateFormat('HH:mm:ss').format(dateTime);
+
+  _axisLabelPainter.text = TextSpan(
+    text: '$date\n$time',
+    style: const TextStyle(
+      fontSize: 12,
+      color: Colors.black,
+    ),
+  );
+  _axisLabelPainter.layout();
+  _axisLabelPainter.paint(canvas, Offset(scaleX, size.height));
+}
+
+/* example
+Suppose the canvas’s size.width = 400, size.height = 200, xRange = 200, yRange = 50, leftOffset = 10 ,rightOffset = 30
+xStep = 400 * 1 / 200 = 2  
+xScalePoints = 400 * 1 / 80 = 5  
+xInterval = (200 - 1) / 5 = 39.8  
+The 5 vertical grid lines and date time labels will be:
+grid line #0 (scaleX0, 0) to (scaleX0, 200), label #0 = dataList[0].dateTime
+grid line #1 (scaleX1, 0) to (scaleX1, 200), label #1 = dataList[40].dateTime
+grid line #2 (scaleX2, 0) to (scaleX2, 200), label #2 = dataList[80].dateTime
+grid line #3 (scaleX3, 0) to (scaleX3, 200), label #3 = dataList[120].dateTime
+grid line #4 (scaleX4, 0) to (scaleX4, 200), label #4 = dataList[159].dateTime
+*/
+```
+<p align="center">
+ <img src="https://miro.medium.com/v2/resize:fit:4800/format:webp/1*fcdK1MqyvNTabrWjSaGpBA.png" width="600" height="400">  
+</p>
+<br>
+<br>
 
 ## Additional information
 
