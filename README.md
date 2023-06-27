@@ -238,16 +238,15 @@ for (int i = 0; i < xScalePoints; i++) {
 }
 
 /* example
-Suppose the canvas’s size.width = 400, size.height = 200, xRange = 200, yRange = 50, leftOffset = 10 ,rightOffset = 30
+Suppose the canvas’s size.width = 390, size.height = 200, xRange = 200, yRange = 50, leftOffset = 10 ,rightOffset = 30
 xStep = 400 * 1 / 200 = 2  
-xScalePoints = 400 * 1 / 80 = 5  
-xInterval = (200 - 1) / 5 = 39.8  
+xScalePoints = 390 * 1 ~/ 80 = 4
+xInterval = (200 - 1) / 4 = 49.75  
 The 5 vertical grid lines and date time labels will be:
 grid line #0 (scaleX0, 0) to (scaleX0, 200), label #0 = dataList[0].dateTime
-grid line #1 (scaleX1, 0) to (scaleX1, 200), label #1 = dataList[40].dateTime
-grid line #2 (scaleX2, 0) to (scaleX2, 200), label #2 = dataList[80].dateTime
-grid line #3 (scaleX3, 0) to (scaleX3, 200), label #3 = dataList[120].dateTime
-grid line #4 (scaleX4, 0) to (scaleX4, 200), label #4 = dataList[159].dateTime
+grid line #1 (scaleX1, 0) to (scaleX1, 200), label #1 = dataList[50].dateTime
+grid line #2 (scaleX2, 0) to (scaleX2, 200), label #2 = dataList[100].dateTime
+grid line #3 (scaleX3, 0) to (scaleX3, 200), label #3 = dataList[149].dateTime
 */
 ```
 <p align="center">
