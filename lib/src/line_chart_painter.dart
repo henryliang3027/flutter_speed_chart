@@ -20,6 +20,10 @@ class LineChartPainter extends CustomPainter {
     required this.maxDate,
     required this.xRange,
     required this.yRange,
+    required this.showMultipleYAxises,
+    required this.minValues,
+    required this.maxValues,
+    required this.yRanges,
   });
 
   final List<LineSeriesX> lineSeriesXCollection;
@@ -36,6 +40,10 @@ class LineChartPainter extends CustomPainter {
   final DateTime maxDate;
   final double xRange;
   final double yRange;
+  final bool showMultipleYAxises;
+  final List<double> minValues;
+  final List<double> maxValues;
+  final List<double> yRanges;
 
   final TextPainter _axisLabelPainter = TextPainter(
     textAlign: TextAlign.left,
@@ -127,13 +135,25 @@ class LineChartPainter extends CustomPainter {
         Offset(size.width + leftOffset - rightOffset, size.height), _axisPaint);
   }
 
+  void _drawXAxisForMultipleYAxises({
+    required Canvas canvas,
+    required Size size,
+  }) {
+    double newLeftOffset = leftOffset + 40 * (lineSeriesXCollection.length - 1);
+
+    canvas.drawLine(
+        Offset(newLeftOffset, size.height),
+        Offset(size.width + newLeftOffset - rightOffset, size.height),
+        _axisPaint);
+  }
+
   // Draw vertical grid line and X-Axis scale points
   void _drawXAxisLabelAndVerticalGridLine({
     required Canvas canvas,
     required Size size,
     required double xStep,
   }) {
-    int xScalePoints = size.width * scale ~/ 80;
+    int xScalePoints = size.width * scale ~/ 100;
     // longestLineSeriesX.dataList.length - 1 is to avoid (i * xInterval).round() is equal to longestLineSeriesX.dataList.length
     double xInterval = (longestLineSeriesX.dataList.length - 1) / xScalePoints;
     for (int i = 0; i < xScalePoints; i++) {
@@ -193,7 +213,53 @@ class LineChartPainter extends CustomPainter {
       );
       _axisLabelPainter.layout();
       _axisLabelPainter.paint(
-          canvas, Offset(10, scaleY - _axisLabelPainter.height / 2));
+          canvas,
+          Offset(leftOffset - _axisLabelPainter.width - 4,
+              scaleY - _axisLabelPainter.height));
+    }
+  }
+
+  void _drawYAxisLabelAndHorizontalGridLineForMultipleYAxises({
+    required Canvas canvas,
+    required Size size,
+  }) {
+    for (int i = 0; i < lineSeriesXCollection.length; i++) {
+      LineSeriesX lineSeries = lineSeriesXCollection[i];
+      double newLeftOffset = leftOffset + 40 * i;
+
+      // Draw Y-Axis
+      canvas.drawLine(Offset(newLeftOffset, 0),
+          Offset(newLeftOffset, size.height), _axisPaint);
+
+      int yScalePoints = 5;
+      double yInterval = yRanges[i] / yScalePoints;
+      double yStep = size.height / yRanges[i];
+      for (int j = 0; j < yScalePoints; j++) {
+        double scaleY = size.height - j * yInterval * yStep;
+
+        // Draw horizontal grid line
+        if (i == lineSeriesXCollection.length - 1) {
+          canvas.drawLine(
+              Offset(newLeftOffset, scaleY),
+              Offset(size.width - rightOffset + newLeftOffset, scaleY),
+              _gridPaint);
+        }
+
+        // Draw Y-axis scale points
+        String label = (j * yInterval + minValues[i]).toStringAsFixed(1);
+        _axisLabelPainter.text = TextSpan(
+          text: label,
+          style: TextStyle(
+            fontSize: 12,
+            color: lineSeries.color,
+          ),
+        );
+        _axisLabelPainter.layout();
+        _axisLabelPainter.paint(
+            canvas,
+            Offset(newLeftOffset - _axisLabelPainter.width - 2,
+                scaleY - _axisLabelPainter.height / 2));
+      }
     }
   }
 
@@ -208,8 +274,16 @@ class LineChartPainter extends CustomPainter {
     // 如果 line series value 全部都是 null,就不用畫 track ball
     // 如果 至少有 value 不是 null, 就要畫
     if (nonNullValueIndex != -1) {
-      double adjustedLongPressX =
-          longPressX.clamp(0.0, size.width - rightOffset);
+      double adjustedLongPressX = 0.0;
+      if (showMultipleYAxises) {
+        double newLeftOffset = 40 * (lineSeriesXCollection.length - 1);
+        adjustedLongPressX = longPressX - newLeftOffset;
+        adjustedLongPressX =
+            adjustedLongPressX.clamp(0.0, size.width - rightOffset);
+      } else {
+        adjustedLongPressX = longPressX.clamp(0.0, size.width - rightOffset);
+      }
+
       DateTime closestDateTime = _findClosestPoint(
         x: adjustedLongPressX,
         offsetX: offset,
@@ -243,7 +317,7 @@ class LineChartPainter extends CustomPainter {
       }
 
       String longestTip = tips.values.reduce(
-          (value, element) => value.length > element.length ? value : element);
+          (value, element) => value.length >= element.length ? value : element);
 
       _tipTextPainter.text = TextSpan(
         text: longestTip,
@@ -298,7 +372,7 @@ class LineChartPainter extends CustomPainter {
           Paint circlePaint = Paint()
             ..color = lineSeriesXCollection[entry.key].color;
           Offset center =
-              Offset(textX + 4 - adjustedTextX, textY + 13 * tipRowCount);
+              Offset(textX + 4 - adjustedTextX, textY + 14 * tipRowCount);
           double radius = 4;
           canvas.drawCircle(center, radius, circlePaint);
 
@@ -313,7 +387,7 @@ class LineChartPainter extends CustomPainter {
           _tipTextPainter.paint(
               canvas,
               Offset(textX - adjustedTextX + 10,
-                  (textY + 13 * tipRowCount) - _tipTextPainter.height / 2));
+                  (textY + 14 * tipRowCount) - _tipTextPainter.height / 2));
 
           tipRowCount += 1;
         }
@@ -340,7 +414,7 @@ class LineChartPainter extends CustomPainter {
       // find the first non null value
       int firstIndex = data.indexWhere((element) => element.value != null);
       if (firstIndex != -1) {
-        for (int i = firstIndex; i < data.length - 1; i++) {
+        for (int i = firstIndex; i < data.length; i++) {
           double currentScaleX =
               (data[i].dateTime.difference(minDate).inSeconds * xStep);
           double? currentScaleY = data[i].value == null
@@ -366,14 +440,71 @@ class LineChartPainter extends CustomPainter {
     }
   }
 
+  void _drawLineSeriesForMultipleYAxises({
+    required Canvas canvas,
+    required Size size,
+    required double xStep,
+  }) {
+    for (int i = 0; i < lineSeriesXCollection.length; i++) {
+      List<DateValuePair> data = lineSeriesXCollection[i].dataList;
+      if (data.isNotEmpty) {
+        List<int> startIndex = lineSeriesXCollection[i].startIndexes;
+        double yStep = size.height / yRanges[i];
+        Path linePath = Path();
+
+        Paint linePaint = Paint()
+          ..color = lineSeriesXCollection[i].color
+          ..strokeWidth = 2.0
+          ..strokeCap = StrokeCap.round
+          ..style = PaintingStyle.stroke;
+
+        // 找到第一個 value 不是 null 的 index
+        int firstIndex = data.indexWhere((element) => element.value != null);
+        if (firstIndex != -1) {
+          // line series value 不是全部都是 null, 至少有一個 value 不是null
+          for (int j = firstIndex; j < data.length; j++) {
+            double currentScaleX =
+                (data[j].dateTime.difference(minDate).inSeconds * xStep);
+            double? currentScaleY = data[j].value == null
+                ? null
+                : (maxValues[i] - data[j].value!) * yStep;
+
+            if (currentScaleY != null) {
+              if (j == firstIndex) {
+                linePath.moveTo(currentScaleX, currentScaleY);
+              }
+
+              // if previous index of value is null, Do not draw line near the point
+              if (startIndex.contains(j)) {
+                linePath.moveTo(currentScaleX, currentScaleY);
+              } else {
+                linePath.lineTo(currentScaleX, currentScaleY);
+              }
+            }
+          }
+
+          canvas.drawPath(linePath, linePaint);
+        }
+      }
+    }
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     double yStep = size.height / yRange;
-    _drawYAxisLabelAndHorizontalGridLine(
-      canvas: canvas,
-      size: size,
-      yStep: yStep,
-    );
+
+    if (showMultipleYAxises) {
+      _drawYAxisLabelAndHorizontalGridLineForMultipleYAxises(
+        canvas: canvas,
+        size: size,
+      );
+    } else {
+      _drawYAxisLabelAndHorizontalGridLine(
+        canvas: canvas,
+        size: size,
+        yStep: yStep,
+      );
+    }
 
     // Draw Y-axis line
     _drawYAxis(
@@ -382,16 +513,34 @@ class LineChartPainter extends CustomPainter {
     );
 
     // Draw X-axis line
-    _drawXAxis(
-      canvas: canvas,
-      size: size,
-    );
+    if (showMultipleYAxises) {
+      _drawXAxisForMultipleYAxises(
+        canvas: canvas,
+        size: size,
+      );
+    } else {
+      _drawXAxis(
+        canvas: canvas,
+        size: size,
+      );
+    }
 
     // current (left,top) => (0,0)
     // canvas.save();
-    canvas.clipRect(Rect.fromPoints(Offset(leftOffset, 0),
-        Offset(size.width + leftOffset - rightOffset + 1, size.height + 40)));
-    canvas.translate(leftOffset + offset, 0);
+
+    if (showMultipleYAxises) {
+      double newLeftOffset =
+          leftOffset + 40 * (lineSeriesXCollection.length - 1);
+      canvas.clipRect(Rect.fromPoints(
+          Offset(newLeftOffset, 0),
+          Offset(
+              size.width + newLeftOffset - rightOffset + 1, size.height + 40)));
+      canvas.translate(newLeftOffset + offset, 0);
+    } else {
+      canvas.clipRect(Rect.fromPoints(Offset(leftOffset, 0),
+          Offset(size.width + leftOffset - rightOffset + 1, size.height + 40)));
+      canvas.translate(leftOffset + offset, 0);
+    }
 
     double xStep = (size.width * scale - rightOffset) / xRange;
 
@@ -402,11 +551,19 @@ class LineChartPainter extends CustomPainter {
     );
 
     // Draw line series
-    _drawLineSeries(
-      canvas: canvas,
-      xStep: xStep,
-      yStep: yStep,
-    );
+    if (showMultipleYAxises) {
+      _drawLineSeriesForMultipleYAxises(
+        canvas: canvas,
+        size: size,
+        xStep: xStep,
+      );
+    } else {
+      _drawLineSeries(
+        canvas: canvas,
+        xStep: xStep,
+        yStep: yStep,
+      );
+    }
 
     if (showTooltip) {
       _drawTrackBall(

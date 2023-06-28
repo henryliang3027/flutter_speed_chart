@@ -24,12 +24,14 @@ class SpeedLineChart extends StatefulWidget {
   final List<LineSeries> lineSeriesCollection;
   final String title;
   final bool showLegend;
+  final bool showMultipleYAxises;
 
   const SpeedLineChart({
     Key? key,
     required this.lineSeriesCollection,
     this.title = '',
     this.showLegend = true,
+    this.showMultipleYAxises = false,
   }) : super(key: key);
 
   @override
@@ -40,7 +42,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   bool _showTooltip = false;
 
   double _longPressX = 0.0;
-  final double _leftOffset = 40;
+  final double _leftOffset = 50;
   final double _rightOffset = 60;
 
   double _offset = 0.0;
@@ -53,6 +55,11 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   DateTime _maxDate = DateTime.now();
   double _xRange = 0.0;
   double _yRange = 0.0;
+
+  // multiple Y-axis
+  final List<double> _yRanges = [];
+  final List<double> _minValues = [];
+  final List<double> _maxValues = [];
 
   double _focalPointX = 0.0;
   double _lastUpdateFocalPointX = 0.0;
@@ -180,6 +187,37 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     );
   }
 
+  void setMinValueAndMaxValueForMultipleYAxis() {
+    for (LineSeriesX lineSeries in _lineSeriesXCollection) {
+      List<double?> allValues = lineSeries.dataMap.values.toList();
+
+      allValues.removeWhere((element) => element == null);
+
+      double tempMinValue = 0.0;
+      double tempMaxValue = 0.0;
+
+      tempMinValue = allValues
+          .map((value) => value)
+          .reduce((value, element) => value! < element! ? value : element)!;
+
+      tempMaxValue = allValues
+          .map((value) => value)
+          .reduce((value, element) => value! > element! ? value : element)!;
+
+      double minValue = getMinimumYAxisValue(
+        tempMaxValue: tempMaxValue,
+        tempMinValue: tempMinValue,
+      );
+      double maxValue = getMaximumYAxisValue(
+        tempMaxValue: tempMaxValue,
+        tempMinValue: tempMinValue,
+      );
+
+      _minValues.add(minValue);
+      _maxValues.add(maxValue);
+    }
+  }
+
   void setMinDateAndMaxDate() {
     List<DateTime> allDateTimes = _lineSeriesXCollection
         .expand((lineSeries) => lineSeries.dataMap.keys)
@@ -197,6 +235,15 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     _yRange = _maxValue - _minValue;
   }
 
+  void setXRangeAndYRangeForMultipleYAxis() {
+    _xRange = _maxDate.difference(_minDate).inSeconds.toDouble();
+
+    for (int i = 0; i < _lineSeriesXCollection.length; i++) {
+      double yRanges = _maxValues[i] - _minValues[i];
+      _yRanges.add(yRanges);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -207,9 +254,15 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         .reduce((value, element) =>
             value.dataList.length > element.dataList.length ? value : element);
 
-    setMinValueAndMaxValue();
-    setMinDateAndMaxDate();
-    setXRangeAndYRange();
+    if (widget.showMultipleYAxises) {
+      setMinValueAndMaxValueForMultipleYAxis();
+      setMinDateAndMaxDate();
+      setXRangeAndYRangeForMultipleYAxis();
+    } else {
+      setMinValueAndMaxValue();
+      setMinDateAndMaxDate();
+      setXRangeAndYRange();
+    }
   }
 
   @override
@@ -306,7 +359,11 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               showTooltip: _showTooltip,
               longPressX: _longPressX,
               leftOffset: _leftOffset,
-              rightOffset: _rightOffset,
+              rightOffset: widget.showMultipleYAxises
+                  ? _rightOffset +
+                      (widget.lineSeriesCollection.length - 1) *
+                          40 //根據y-axis軸的數量調整右邊的邊界
+                  : _rightOffset,
               offset: _offset,
               scale: _scale,
               minValue: _minValue,
@@ -315,6 +372,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               maxDate: _maxDate,
               xRange: _xRange,
               yRange: _yRange,
+              showMultipleYAxises: widget.showMultipleYAxises,
+              minValues: _minValues,
+              maxValues: _maxValues,
+              yRanges: _yRanges,
             ),
           ),
           const SizedBox(

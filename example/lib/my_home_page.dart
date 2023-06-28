@@ -1,9 +1,13 @@
 import 'package:example/data_1_1.dart';
+import 'package:example/data_3.dart';
 import 'package:example/data_3_3.dart';
 import 'package:example/data_3_3_3.dart';
 import 'package:example/data_3_3_3_3.dart';
+import 'package:example/data_dsim_1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/speed_chart.dart';
+
+import 'data_dsim_2.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -29,6 +33,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<LineSeries> _lineSeriesCollection2 = [];
   List<LineSeries> _lineSeriesCollection3 = [];
   List<LineSeries> _lineSeriesCollection4 = [];
+  List<LineSeries> _lineSeriesCollectionDsimAPT = [];
+  List<LineSeries> _lineSeriesCollectionDsimVoltage = [];
 
   LineSeries _getChartData({
     required List data,
@@ -131,6 +137,37 @@ class _MyHomePageState extends State<MyHomePage> {
         name: 'Line4',
       ),
     ];
+
+    _lineSeriesCollectionDsimAPT = [
+      _getChartData(
+        data: jsonData_att2,
+        color: Colors.red,
+        name: 'Attenuator',
+      ),
+      _getChartData(
+        data: jsonData_temp2,
+        color: Colors.orange,
+        name: 'Temperature',
+      ),
+      _getChartData(
+        data: jsonData_pilot2,
+        color: Colors.green,
+        name: 'Pilot',
+      ),
+    ];
+
+    _lineSeriesCollectionDsimVoltage = [
+      _getChartData(
+        data: jsonData_voltage2,
+        color: Colors.red,
+        name: 'Attenuator',
+      ),
+      _getChartData(
+        data: jsonData_voltage_ripple2,
+        color: Colors.orange,
+        name: 'Temperature',
+      ),
+    ];
   }
 
   @override
@@ -143,6 +180,28 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollectionDsimAPT,
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollectionDsimAPT,
+              showLegend: true,
+              showMultipleYAxises: true,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
+              showLegend: true,
+              showMultipleYAxises: true,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
             _Counter(
               lineSeriesCollection: _lineSeriesCollection0,
             ),
