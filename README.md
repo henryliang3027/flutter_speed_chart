@@ -261,7 +261,10 @@ grid line #3 (scaleX3, 0) to (scaleX3, 200), label #3 = dataList[149].dateTime
 offset的值是隨著平移圖表時變化的, 帶入canvas.translate來達到平移圖表,類似sliding window在圖表上滑動,決定呈現範圍  
 計算offset的方法, 假設按下的點為op(已知), 縮放後的點為np(未知), op : 原圖表寬 = np : 新圖表寬(scale * 原圖表寬)  
 新的offset = op - np  
-scale的值是用```onScaleUpdate```提供的值來計算的, 帶入 xStep 來得到縮放單位長度  
+scale的值是用```onScaleUpdate```提供的值來計算的, 帶入 xStep 來得到縮放單位長度
+
+7. [syncfusion 的效能相關問題討論](https://www.syncfusion.com/forums/178260/moving-trackball-quickly-block-the-whole-ui-in-the-case-of-huge-amount-of-data)
+
 
 
 ## Additional information
