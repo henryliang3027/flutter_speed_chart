@@ -255,6 +255,14 @@ grid line #3 (scaleX3, 0) to (scaleX3, 200), label #3 = dataList[149].dateTime
 <br>
 <br>
 
+5. 畫折現的方式也是一樣  
+6. 如何達到水平平移跟水瓶縮放  
+可以用 ```GestureDetector``` 的 ```onScaleStart``` 和 ```onScaleUpdate```   
+offset的值是隨著平移圖表時變化的, 帶入canvas.translate來達到平移圖表,類似sliding window在圖表上滑動,決定呈現範圍  
+計算offset的方法, 假設新的 offset 為 x, 原offset : 原圖表寬 = x : 新圖表寬(scale * 原圖表寬)  
+scale的值是用```onScaleUpdate```提供的值來計算的, 帶入 xStep 來得到縮放單位長度  
+
+
 ## Additional information
 
 For more implement detail, refer to my Medium articles:
