@@ -255,54 +255,16 @@ grid line #3 (scaleX3, 0) to (scaleX3, 200), label #3 = dataList[149].dateTime
 <br>
 <br>
 
-## Knowledge
+5. 畫折現的方式也是一樣  
+6. 如何達到水平平移跟水瓶縮放  
+可以用 ```GestureDetector``` 的 ```onScaleStart``` 和 ```onScaleUpdate```   
+offset的值是隨著平移圖表時變化的, 帶入canvas.translate來達到平移圖表,類似sliding window在圖表上滑動,決定呈現範圍  
+計算offset的方法, 假設按下的點為op(已知), 縮放後的點為np(未知), op : 原圖表寬 = np : 新圖表寬(scale * 原圖表寬)  
+新的offset = op - np  
+scale的值是用```onScaleUpdate```提供的值來計算的, 帶入 xStep 來得到縮放單位長度
 
-一些需要的數值：
-原始資料點(x,y) : (DateTime, Value)
-_minDate // 最早的日期時間
-_maxDate // 最晚的日期時間
-_minValue // 最小值
-_maxValue // 最大值
-_xRange = _maxDate.difference(_minDate).inSeconds.toDouble();
-_yRange = _maxValue - _minValue;
+7. [syncfusion 的效能相關問題討論](https://www.syncfusion.com/forums/178260/moving-trackball-quickly-block-the-whole-ui-in-the-case-of-huge-amount-of-data)
 
-
-1. Draw Y-axis labels and horizontal grid lines
-畫5個刻度: yScalePoints = 5
-先算出y軸的每一個單位的長度：
- ```double yStep = size.height / yRange;```
-
-算出刻度之間的間距：
-```double yInterval = yRange / yScalePoints;```
-
-用迴圈一個一個畫
-```
-for (int i = 0; i < yScalePoints; i++) {
-    double scaleY = size.height - i * yInterval * yStep;
-
-    // Draw horizontal grid line
-    canvas.drawLine(Offset(leftOffset, scaleY),
-        Offse(size.width - rightOffset + leftOffset, scaleY), _gridPaint);
-
-    // Draw Y-axis scale points
-    String label = (i * yInterval + minValue).toStringAsFixed(1);
-    _axisLabelPainter.text = TextSpan(
-    text: label,
-    style: const TextStyle(
-        fontSize: 12,
-        color: Colors.black,
-    ),
-    );
-    _axisLabelPainter.layout();
-    _axisLabelPainter.paint(
-        canvas,
-        Offset(leftOffset - _axisLabelPainter.width - 4,
-            scaleY - _axisLabelPainter.height));
-}
-```
-<p align="center">
- <img src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*BLpS_2KGnl5FGwczeCBD_A.png" width="600" height="400">  
-</p>
 
 
 ## Additional information
