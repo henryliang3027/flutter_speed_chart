@@ -155,25 +155,38 @@ class LineChartPainter extends CustomPainter {
   }) {
     int xScalePoints = size.width * scale ~/ 100;
     // longestLineSeriesX.dataList.length - 1 is to avoid (i * xInterval).round() is equal to longestLineSeriesX.dataList.length
-    double xInterval = (longestLineSeriesX.dataList.length - 1) / xScalePoints;
+    int xInterval =
+        (maxDate.millisecondsSinceEpoch - minDate.millisecondsSinceEpoch) ~/
+            1000 ~/
+            xScalePoints;
     for (int i = 0; i < xScalePoints; i++) {
-      double scaleX = (longestLineSeriesX
-              .dataList[(i * xInterval).round()].dateTime
-              .difference(minDate)
-              .inSeconds
-              .toDouble() *
-          xStep);
+      DateTime dateTimeScalePoint = DateTime.fromMillisecondsSinceEpoch(
+          minDate.millisecondsSinceEpoch + xInterval * 1000 * i);
+
+      double scaleX =
+          dateTimeScalePoint.difference(minDate).inSeconds.toDouble() * xStep;
+
+      // double scaleX = (longestLineSeriesX
+      //         .dataList[(i * xInterval).round()].dateTime
+      //         .difference(minDate)
+      //         .inSeconds
+      //         .toDouble() *
+      //     xStep);
 
       // Draw vertical grid line
       canvas.drawLine(
           Offset(scaleX, 0), Offset(scaleX, size.height), _gridPaint);
 
       // Draw X-Axis scale points
-      DateTime dateTime =
-          longestLineSeriesX.dataList[(i * xInterval).round()].dateTime;
-      String date = DateFormat('yy-MM-dd').format(dateTime);
+      // DateTime dateTime =
+      //     longestLineSeriesX.dataList[(i * xInterval).round()].dateTime;
+      // String date = DateFormat('yy-MM-dd').format(dateTime);
 
-      String time = DateFormat('HH:mm:ss').format(dateTime);
+      // String time = DateFormat('HH:mm:ss').format(dateTime);
+
+      String date = DateFormat('yy-MM-dd').format(dateTimeScalePoint);
+
+      String time = DateFormat('HH:mm:ss').format(dateTimeScalePoint);
 
       _axisLabelPainter.text = TextSpan(
         text: '$date\n$time',
