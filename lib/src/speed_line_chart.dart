@@ -274,12 +274,15 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       double newScale,
       double focusOnScreen,
     ) {
-      double ratioInGraph =
-          (_offset.abs() + focusOnScreen) / (_scale * widgetWidth);
-
+      // original position : original total width = new position x : new total width
+      // solve x
+      double originalTotalWidth = _scale * widgetWidth;
       double newTotalWidth = newScale * widgetWidth;
 
-      double newLocationInGraph = ratioInGraph * newTotalWidth;
+      double originalRatioInGraph =
+          (_offset.abs() + focusOnScreen) / originalTotalWidth;
+
+      double newLocationInGraph = originalRatioInGraph * newTotalWidth;
 
       return focusOnScreen - newLocationInGraph;
     }
@@ -290,13 +293,14 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       newScale = newScale.clamp(1.0, 30.0);
 
-      // 根据缩放焦点计算出left
+      // 根據縮放焦點算出圖的起始點
       double left = calculateOffsetX(newScale, focusX);
+      print('left: $left');
 
-      // 加上额外的水平偏移量
+      // 加上額外的水平偏移量
       left += extraX;
 
-      // 将x范围限制图表宽度内
+      // 將範圍限制在圖表寬度內
       double newOffsetX = left.clamp((newScale - 1) * -widgetWidth, 0.0);
 
       setState(() {
@@ -307,8 +311,13 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
     return GestureDetector(
       onScaleStart: (details) {
+        // 紀錄按下去的點
         _focalPointX = details.focalPoint.dx;
+
+        // 紀錄目前的scale
         _lastScaleValue = _scale;
+
+        // 紀錄按下去的點, 用在計算縮放時焦點的偏移量
         _lastUpdateFocalPointX = details.focalPoint.dx;
       },
       onScaleUpdate: (details) {
