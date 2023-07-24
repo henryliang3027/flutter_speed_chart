@@ -3,6 +3,7 @@ import 'package:flutter_speed_chart/src/date_value_pair.dart';
 import 'package:flutter_speed_chart/src/legend.dart';
 import 'package:flutter_speed_chart/src/line_chart_painter.dart';
 import 'package:flutter_speed_chart/src/line_series.dart';
+import 'package:intl/intl.dart';
 
 class LineSeriesX {
   const LineSeriesX({
@@ -143,78 +144,78 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         .expand((lineSeries) => lineSeries.dataMap.values)
         .toList();
 
-    allValues.removeWhere((element) => element == null);
-
-    List<double?> allNonNullValues = [];
-    allNonNullValues.addAll(allValues);
-
-    double tempMinValue = 0.0;
-    double tempMaxValue = 0.0;
-
-    if (allNonNullValues.isNotEmpty) {
-      tempMinValue = allNonNullValues
-          .map((value) => value)
-          .reduce((value, element) => value! < element! ? value : element)!;
-
-      tempMaxValue = allNonNullValues
-          .map((value) => value)
-          .reduce((value, element) => value! > element! ? value : element)!;
-    }
-
-    // if (widget.makrers.isNotEmpty) {
-    //   List<double> markerValues = [];
-
-    //   for (Marker marker in widget.makrers) {
-    //     markerValues.add(marker.value);
-    //   }
-
-    //   tempMinValue = [tempMinValue, ...markerValues]
-    //       .map((value) => value)
-    //       .reduce((value, element) => value < element ? value : element);
-
-    //   tempMaxValue = [tempMaxValue, ...markerValues]
-    //       .map((value) => value)
-    //       .reduce((value, element) => value > element ? value : element);
-    // }
-
-    _minValue = getMinimumYAxisValue(
-      tempMaxValue: tempMaxValue,
-      tempMinValue: tempMinValue,
-    );
-    _maxValue = getMaximumYAxisValue(
-      tempMaxValue: tempMaxValue,
-      tempMinValue: tempMinValue,
-    );
-  }
-
-  void setMinValueAndMaxValueForMultipleYAxis() {
-    for (LineSeriesX lineSeries in _lineSeriesXCollection) {
-      List<double?> allValues = lineSeries.dataMap.values.toList();
-
+    if (allValues.isNotEmpty) {
       allValues.removeWhere((element) => element == null);
+
+      List<double?> allNonNullValues = [];
+      allNonNullValues.addAll(allValues);
 
       double tempMinValue = 0.0;
       double tempMaxValue = 0.0;
 
-      tempMinValue = allValues
-          .map((value) => value)
-          .reduce((value, element) => value! < element! ? value : element)!;
+      if (allNonNullValues.isNotEmpty) {
+        tempMinValue = allNonNullValues
+            .map((value) => value)
+            .reduce((value, element) => value! < element! ? value : element)!;
 
-      tempMaxValue = allValues
-          .map((value) => value)
-          .reduce((value, element) => value! > element! ? value : element)!;
+        tempMaxValue = allNonNullValues
+            .map((value) => value)
+            .reduce((value, element) => value! > element! ? value : element)!;
+      }
 
-      double minValue = getMinimumYAxisValue(
+      _minValue = getMinimumYAxisValue(
         tempMaxValue: tempMaxValue,
         tempMinValue: tempMinValue,
       );
-      double maxValue = getMaximumYAxisValue(
+      _maxValue = getMaximumYAxisValue(
         tempMaxValue: tempMaxValue,
         tempMinValue: tempMinValue,
       );
+    } else {
+      _minValue = 0.0;
+      _maxValue = 10.0;
+    }
+  }
 
-      _minValues.add(minValue);
-      _maxValues.add(maxValue);
+  void setMinValueAndMaxValueForMultipleYAxis() {
+    List<double?> allValues = _lineSeriesXCollection
+        .expand((lineSeries) => lineSeries.dataMap.values)
+        .toList();
+
+    if (allValues.isNotEmpty) {
+      for (LineSeriesX lineSeries in _lineSeriesXCollection) {
+        List<double?> allValues = lineSeries.dataMap.values.toList();
+
+        allValues.removeWhere((element) => element == null);
+
+        double tempMinValue = 0.0;
+        double tempMaxValue = 0.0;
+
+        tempMinValue = allValues
+            .map((value) => value)
+            .reduce((value, element) => value! < element! ? value : element)!;
+
+        tempMaxValue = allValues
+            .map((value) => value)
+            .reduce((value, element) => value! > element! ? value : element)!;
+
+        double minValue = getMinimumYAxisValue(
+          tempMaxValue: tempMaxValue,
+          tempMinValue: tempMinValue,
+        );
+        double maxValue = getMaximumYAxisValue(
+          tempMaxValue: tempMaxValue,
+          tempMinValue: tempMinValue,
+        );
+
+        _minValues.add(minValue);
+        _maxValues.add(maxValue);
+      }
+    } else {
+      for (LineSeriesX lineSeries in _lineSeriesXCollection) {
+        _minValues.add(0.0);
+        _maxValues.add(10.0);
+      }
     }
   }
 
@@ -222,12 +223,17 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     List<DateTime> allDateTimes = _lineSeriesXCollection
         .expand((lineSeries) => lineSeries.dataMap.keys)
         .toList();
-    _minDate = allDateTimes
-        .map((dateTime) => dateTime)
-        .reduce((value, element) => value.isBefore(element) ? value : element);
-    _maxDate = allDateTimes
-        .map((dateTime) => dateTime)
-        .reduce((value, element) => value.isAfter(element) ? value : element);
+
+    if (allDateTimes.isNotEmpty) {
+      _minDate = allDateTimes.map((dateTime) => dateTime).reduce(
+          (value, element) => value.isBefore(element) ? value : element);
+      _maxDate = allDateTimes
+          .map((dateTime) => dateTime)
+          .reduce((value, element) => value.isAfter(element) ? value : element);
+    } else {
+      _minDate = DateTime.parse('1911-01-01 11:11');
+      _maxDate = DateTime.parse('1911-01-02 11:11');
+    }
   }
 
   void setXRangeAndYRange() {

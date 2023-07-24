@@ -67,12 +67,21 @@ class _MyHomePageState extends State<MyHomePage> {
     _lineSeriesCollection0 = [
       _getChartData(
         data: [
-          {"time": "2022-09-16 00:41:38", "value": "null"},
-          {"time": "2022-09-16 00:51:39", "value": "null"},
-          {"time": "2022-09-16 01:01:38", "value": "null"},
+          // {"time": "2022-09-16 00:41:38", "value": "null"},
+          // {"time": "2022-09-16 00:51:39", "value": "null"},
+          // {"time": "2022-09-16 01:01:38", "value": "null"},
         ],
         color: Colors.red,
         name: 'Line0',
+      ),
+      _getChartData(
+        data: [
+          // {"time": "2022-09-16 00:41:38", "value": "null"},
+          // {"time": "2022-09-16 00:51:39", "value": "null"},
+          // {"time": "2022-09-16 01:01:38", "value": "null"},
+        ],
+        color: Colors.orange,
+        name: 'Line1',
       ),
     ];
 
@@ -209,6 +218,18 @@ class _MyHomePageState extends State<MyHomePage> {
               lineSeriesCollection: _lineSeriesCollection0,
               title: _lineSeriesCollection0[0].name,
               showLegend: false,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollection0,
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollection0,
+              title: _lineSeriesCollection0[0].name,
+              showLegend: true,
+              showMultipleYAxises: true,
             ),
             const SizedBox(
               height: 30.0,
