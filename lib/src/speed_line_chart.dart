@@ -12,6 +12,8 @@ class LineSeriesX {
     required this.dataList,
     required this.dataMap,
     required this.startIndexes,
+    this.maxYAxisValue,
+    this.minYAxisValue,
   });
 
   final String name;
@@ -19,6 +21,8 @@ class LineSeriesX {
   final List<DateValuePair> dataList;
   final Map<DateTime, double?> dataMap;
   final List<int> startIndexes;
+  final double? maxYAxisValue;
+  final double? minYAxisValue;
 }
 
 class SpeedLineChart extends StatefulWidget {
@@ -52,8 +56,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
   double _minValue = 0.0;
   double _maxValue = 0.0;
-  DateTime _minDate = DateTime.now();
-  DateTime _maxDate = DateTime.now();
+  DateTime? _minDate;
+  DateTime? _maxDate;
   double _xRange = 0.0;
   double _yRange = 0.0;
 
@@ -92,6 +96,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         dataList: lineSeries.dataList, // reference
         dataMap: dataMap,
         startIndexes: startIndexes,
+        minYAxisValue: lineSeries.minYAxisValue,
+        maxYAxisValue: lineSeries.maxYAxisValue,
       ));
     }
     return lineSeriesXCollection;
@@ -144,36 +150,75 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         .expand((lineSeries) => lineSeries.dataMap.values)
         .toList();
 
-    if (allValues.isNotEmpty) {
-      allValues.removeWhere((element) => element == null);
+    List<double> allMaxYAxisValues = [];
+    List<double> allMinYAxisValues = [];
 
-      List<double?> allNonNullValues = [];
-      allNonNullValues.addAll(allValues);
+    for (LineSeriesX lineSeriesX in _lineSeriesXCollection) {
+      if (lineSeriesX.maxYAxisValue != null) {
+        allMaxYAxisValues.add(lineSeriesX.maxYAxisValue!);
+      }
+      if (lineSeriesX.minYAxisValue != null) {
+        allMinYAxisValues.add(lineSeriesX.minYAxisValue!);
+      }
+    }
 
+    allValues.removeWhere((element) => element == null);
+
+    List<double?> allNonNullValues = [];
+    allNonNullValues.addAll(allValues);
+
+    if (allNonNullValues.isNotEmpty) {
       double tempMinValue = 0.0;
       double tempMaxValue = 0.0;
 
-      if (allNonNullValues.isNotEmpty) {
-        tempMinValue = allNonNullValues
-            .map((value) => value)
-            .reduce((value, element) => value! < element! ? value : element)!;
+      tempMinValue = allNonNullValues
+          .map((value) => value)
+          .reduce((value, element) => value! < element! ? value : element)!;
 
-        tempMaxValue = allNonNullValues
+      tempMaxValue = allNonNullValues
+          .map((value) => value)
+          .reduce((value, element) => value! > element! ? value : element)!;
+
+      // 如果 lineseries 中有設定 MinYAxisValues
+      if (allMinYAxisValues.isNotEmpty) {
+        _minValue = allMinYAxisValues
             .map((value) => value)
-            .reduce((value, element) => value! > element! ? value : element)!;
+            .reduce((value, element) => value < element ? value : element);
+      } else {
+        _minValue = getMinimumYAxisValue(
+          tempMaxValue: tempMaxValue,
+          tempMinValue: tempMinValue,
+        );
       }
 
-      _minValue = getMinimumYAxisValue(
-        tempMaxValue: tempMaxValue,
-        tempMinValue: tempMinValue,
-      );
-      _maxValue = getMaximumYAxisValue(
-        tempMaxValue: tempMaxValue,
-        tempMinValue: tempMinValue,
-      );
+      // 如果 lineseries 中有設定 MaxYAxisValues
+      if (allMaxYAxisValues.isNotEmpty) {
+        _maxValue = allMaxYAxisValues
+            .map((value) => value)
+            .reduce((value, element) => value > element ? value : element);
+      } else {
+        _maxValue = getMaximumYAxisValue(
+          tempMaxValue: tempMaxValue,
+          tempMinValue: tempMinValue,
+        );
+      }
     } else {
-      _minValue = 0.0;
-      _maxValue = 10.0;
+      // 如果沒有資料點, 就看有沒有給 MaxYAxisValues 或 MinYAxisValues
+      if (allMinYAxisValues.isNotEmpty) {
+        _minValue = allMinYAxisValues
+            .map((value) => value)
+            .reduce((value, element) => value < element ? value : element);
+      } else {
+        _minValue = 0.0;
+      }
+
+      if (allMaxYAxisValues.isNotEmpty) {
+        _maxValue = allMaxYAxisValues
+            .map((value) => value)
+            .reduce((value, element) => value > element ? value : element);
+      } else {
+        _maxValue = 10.0;
+      }
     }
   }
 
@@ -182,39 +227,72 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         .expand((lineSeries) => lineSeries.dataMap.values)
         .toList();
 
-    if (allValues.isNotEmpty) {
-      for (LineSeriesX lineSeries in _lineSeriesXCollection) {
-        List<double?> allValues = lineSeries.dataMap.values.toList();
+    allValues.removeWhere((element) => element == null);
 
-        allValues.removeWhere((element) => element == null);
+    List<double?> allNonNullValues = [];
+    allNonNullValues.addAll(allValues);
+
+    // 如果有資料點
+    if (allNonNullValues.isNotEmpty) {
+      for (LineSeriesX lineSeries in _lineSeriesXCollection) {
+        List<double?> values = lineSeries.dataMap.values.toList();
+
+        values.removeWhere((element) => element == null);
+
+        List<double?> nonNullValues = [];
+        nonNullValues.addAll(values);
 
         double tempMinValue = 0.0;
         double tempMaxValue = 0.0;
 
-        tempMinValue = allValues
-            .map((value) => value)
-            .reduce((value, element) => value! < element! ? value : element)!;
+        if (nonNullValues.isNotEmpty) {
+          tempMinValue = nonNullValues
+              .map((value) => value)
+              .reduce((value, element) => value! < element! ? value : element)!;
 
-        tempMaxValue = allValues
-            .map((value) => value)
-            .reduce((value, element) => value! > element! ? value : element)!;
+          tempMaxValue = nonNullValues
+              .map((value) => value)
+              .reduce((value, element) => value! > element! ? value : element)!;
+        }
 
-        double minValue = getMinimumYAxisValue(
-          tempMaxValue: tempMaxValue,
-          tempMinValue: tempMinValue,
-        );
-        double maxValue = getMaximumYAxisValue(
-          tempMaxValue: tempMaxValue,
-          tempMinValue: tempMinValue,
-        );
+        // 如果 for loop 跑到的 lineSeries 有給 MinYAxisValue
+        if (lineSeries.minYAxisValue != null) {
+          _minValues.add(lineSeries.minYAxisValue!);
+        } else {
+          double minValue = getMinimumYAxisValue(
+            tempMaxValue: tempMaxValue,
+            tempMinValue: tempMinValue,
+          );
+          _minValues.add(minValue);
+        }
 
-        _minValues.add(minValue);
-        _maxValues.add(maxValue);
+        // 如果 for loop 跑到的 lineSeries 有給 MaxYAxisValue
+        if (lineSeries.maxYAxisValue != null) {
+          _maxValues.add(lineSeries.maxYAxisValue!);
+        } else {
+          double maxValue = getMaximumYAxisValue(
+            tempMaxValue: tempMaxValue,
+            tempMinValue: tempMinValue,
+          );
+          _maxValues.add(maxValue);
+        }
       }
     } else {
+      // 如果沒有資料點, 就用 for loop 一個個看有沒有給 MaxYAxisValues 或 MinYAxisValues
       for (LineSeriesX lineSeries in _lineSeriesXCollection) {
-        _minValues.add(0.0);
-        _maxValues.add(10.0);
+        // 如果 for loop 跑到的 lineSeries 有給 MinYAxisValue
+        if (lineSeries.minYAxisValue != null) {
+          _minValues.add(lineSeries.minYAxisValue!);
+        } else {
+          _minValues.add(0.0);
+        }
+
+        // 如果 for loop 跑到的 lineSeries 有給 MaxYAxisValue
+        if (lineSeries.maxYAxisValue != null) {
+          _maxValues.add(lineSeries.maxYAxisValue!);
+        } else {
+          _maxValues.add(10.0);
+        }
       }
     }
   }
@@ -231,18 +309,27 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
           .map((dateTime) => dateTime)
           .reduce((value, element) => value.isAfter(element) ? value : element);
     } else {
-      _minDate = DateTime.parse('1911-01-01 11:11');
-      _maxDate = DateTime.parse('1911-01-02 11:11');
+      _minDate = null;
+      _maxDate = null;
     }
   }
 
   void setXRangeAndYRange() {
-    _xRange = _maxDate.difference(_minDate).inSeconds.toDouble();
+    if (_minDate != null && _maxDate != null) {
+      _xRange = _maxDate!.difference(_minDate!).inSeconds.toDouble();
+    } else {
+      _xRange = 0.0;
+    }
+
     _yRange = _maxValue - _minValue;
   }
 
   void setXRangeAndYRangeForMultipleYAxis() {
-    _xRange = _maxDate.difference(_minDate).inSeconds.toDouble();
+    if (_minDate != null && _maxDate != null) {
+      _xRange = _maxDate!.difference(_minDate!).inSeconds.toDouble();
+    } else {
+      _xRange = 0.0;
+    }
 
     for (int i = 0; i < _lineSeriesXCollection.length; i++) {
       double yRanges = _maxValues[i] - _minValues[i];

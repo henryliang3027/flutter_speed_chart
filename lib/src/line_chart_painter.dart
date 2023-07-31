@@ -36,8 +36,8 @@ class LineChartPainter extends CustomPainter {
   final double scale;
   final double minValue;
   final double maxValue;
-  final DateTime minDate;
-  final DateTime maxDate;
+  final DateTime? minDate;
+  final DateTime? maxDate;
   final double xRange;
   final double yRange;
   final bool showMultipleYAxises;
@@ -75,30 +75,33 @@ class LineChartPainter extends CustomPainter {
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke;
 
-  DateTime _findClosestPoint({
+  DateTime? _findClosestPoint({
     required double x,
     required double offsetX,
     required double xStep,
   }) {
     double closestDistance = double.infinity;
-    DateTime closestDateTime = DateTime.now();
+    DateTime? closestDateTime;
 
-    for (DateTime dateTime in longestLineSeriesX.dataMap.keys) {
-      // because sthe start point of line series is in canvas.translate(leftOffset + offset, 0);
-      // add offsetX to adjust the difference between target datetime and min datetime
-      double distance =
-          (dateTime.difference(minDate).inSeconds.toDouble() * xStep +
-                  offsetX -
-                  x)
-              .abs();
+    if (longestLineSeriesX.dataMap.isNotEmpty) {
+      for (DateTime dateTime in longestLineSeriesX.dataMap.keys) {
+        // because sthe start point of line series is in canvas.translate(leftOffset + offset, 0);
+        // add offsetX to adjust the difference between target datetime and min datetime
+        double distance =
+            (dateTime.difference(minDate!).inSeconds.toDouble() * xStep +
+                    offsetX -
+                    x)
+                .abs();
 
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestDateTime = dateTime;
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestDateTime = dateTime;
+        }
       }
+      return closestDateTime;
+    } else {
+      return null;
     }
-
-    return closestDateTime;
   }
 
   List<Map<int, double?>> _getValueByDateTime(DateTime dateTime) {
@@ -156,15 +159,15 @@ class LineChartPainter extends CustomPainter {
     int xScalePoints = size.width * scale ~/ 100;
     // longestLineSeriesX.dataList.length - 1 is to avoid (i * xInterval).round() is equal to longestLineSeriesX.dataList.length
     int xInterval =
-        (maxDate.millisecondsSinceEpoch - minDate.millisecondsSinceEpoch) ~/
+        (maxDate!.millisecondsSinceEpoch - minDate!.millisecondsSinceEpoch) ~/
             1000 ~/
             xScalePoints;
     for (int i = 0; i < xScalePoints; i++) {
       DateTime dateTimeScalePoint = DateTime.fromMillisecondsSinceEpoch(
-          minDate.millisecondsSinceEpoch + xInterval * 1000 * i);
+          minDate!.millisecondsSinceEpoch + xInterval * 1000 * i);
 
       double scaleX =
-          dateTimeScalePoint.difference(minDate).inSeconds.toDouble() * xStep;
+          dateTimeScalePoint.difference(minDate!).inSeconds.toDouble() * xStep;
 
       // double scaleX = (longestLineSeriesX
       //         .dataList[(i * xInterval).round()].dateTime
@@ -208,7 +211,7 @@ class LineChartPainter extends CustomPainter {
   }) {
     int yScalePoints = 5;
     double yInterval = yRange / yScalePoints;
-    for (int i = 0; i < yScalePoints; i++) {
+    for (int i = 0; i <= yScalePoints; i++) {
       double scaleY = size.height - i * yInterval * yStep;
 
       // Draw horizontal grid line
@@ -216,7 +219,7 @@ class LineChartPainter extends CustomPainter {
           Offset(size.width - rightOffset + leftOffset, scaleY), _gridPaint);
 
       // Draw Y-axis scale points
-      String label = (i * yInterval + minValue).toStringAsFixed(1);
+      String label = (i * yInterval + minValue).toStringAsFixed(0);
       _axisLabelPainter.text = TextSpan(
         text: label,
         style: const TextStyle(
@@ -247,7 +250,7 @@ class LineChartPainter extends CustomPainter {
       int yScalePoints = 5;
       double yInterval = yRanges[i] / yScalePoints;
       double yStep = size.height / yRanges[i];
-      for (int j = 0; j < yScalePoints; j++) {
+      for (int j = 0; j <= yScalePoints; j++) {
         double scaleY = size.height - j * yInterval * yStep;
 
         // Draw horizontal grid line
@@ -259,7 +262,7 @@ class LineChartPainter extends CustomPainter {
         }
 
         // Draw Y-axis scale points
-        String label = (j * yInterval + minValues[i]).toStringAsFixed(1);
+        String label = (j * yInterval + minValues[i]).toStringAsFixed(0);
         _axisLabelPainter.text = TextSpan(
           text: label,
           style: TextStyle(
@@ -297,112 +300,119 @@ class LineChartPainter extends CustomPainter {
         adjustedLongPressX = longPressX.clamp(0.0, size.width - rightOffset);
       }
 
-      DateTime closestDateTime = _findClosestPoint(
+      DateTime? closestDateTime = _findClosestPoint(
         x: adjustedLongPressX,
         offsetX: offset,
         xStep: xStep,
       );
 
-      // Draw vertical line at the closest point
-      canvas.drawLine(
-        Offset(
-            (closestDateTime.difference(minDate).inSeconds.toDouble() * xStep),
-            0),
-        Offset(
-            (closestDateTime.difference(minDate).inSeconds.toDouble() * xStep),
-            size.height),
-        _verticalLinePaint,
-      );
+      if (closestDateTime != null) {
+        // Draw vertical line at the closest point
+        canvas.drawLine(
+          Offset(
+              (closestDateTime.difference(minDate!).inSeconds.toDouble() *
+                  xStep),
+              0),
+          Offset(
+              (closestDateTime.difference(minDate!).inSeconds.toDouble() *
+                  xStep),
+              size.height),
+          _verticalLinePaint,
+        );
 
-      String formatDateTime = _formatDate(closestDateTime);
-      List<Map<int, double?>> valueMapList =
-          _getValueByDateTime(closestDateTime);
+        String formatDateTime = _formatDate(closestDateTime);
+        List<Map<int, double?>> valueMapList =
+            _getValueByDateTime(closestDateTime);
 
-      Map<int, String> tips = {-1: formatDateTime};
+        Map<int, String> tips = {-1: formatDateTime};
 
-      for (Map<int, double?> valueMap in valueMapList) {
-        MapEntry nameValueEntry = valueMap.entries.toList()[0];
-        if (nameValueEntry.value != null) {
-          tips[nameValueEntry.key] =
-              '${lineSeriesXCollection[nameValueEntry.key].name} : ${nameValueEntry.value}'
-                  .toString();
+        for (Map<int, double?> valueMap in valueMapList) {
+          MapEntry nameValueEntry = valueMap.entries.toList()[0];
+          if (nameValueEntry.value != null) {
+            tips[nameValueEntry.key] =
+                '${lineSeriesXCollection[nameValueEntry.key].name} : ${nameValueEntry.value}'
+                    .toString();
+          }
         }
-      }
 
-      String longestTip = tips.values.reduce(
-          (value, element) => value.length >= element.length ? value : element);
+        String longestTip = tips.values.reduce((value, element) =>
+            value.length >= element.length ? value : element);
 
-      _tipTextPainter.text = TextSpan(
-        text: longestTip,
-        style: const TextStyle(
-          color: Colors.black,
-        ),
-      );
+        _tipTextPainter.text = TextSpan(
+          text: longestTip,
+          style: const TextStyle(
+            color: Colors.black,
+          ),
+        );
 
-      _tipTextPainter.layout();
+        _tipTextPainter.layout();
 
-      double rectWidth = _tipTextPainter.width;
+        double rectWidth = _tipTextPainter.width;
 
-      double textX =
-          (closestDateTime.difference(minDate).inSeconds.toDouble() * xStep) +
-              10;
-      double textY = size.height / 2 - (14.0 * (tips.length + 1) + 4) / 2;
+        double textX =
+            (closestDateTime.difference(minDate!).inSeconds.toDouble() *
+                    xStep) +
+                10;
+        double textY = size.height / 2 - (14.0 * (tips.length + 1) + 4) / 2;
 
-      double outOfBoundWidth =
-          (textX - 4) + (rectWidth + 16) - (size.width - rightOffset) + offset;
-      double adjustedTextX = outOfBoundWidth > 0 ? outOfBoundWidth : 0;
-      Rect rect1 = Rect.fromLTWH(
-        textX - 4 - adjustedTextX,
-        textY,
-        rectWidth + 16,
-        12.0 * (tips.length + 1) +
-            4, // +1 for the date time string at the first row
-      );
-      Paint rectPaint = Paint()..color = Colors.white;
-      RRect rRect = RRect.fromRectAndRadius(rect1, const Radius.circular(4));
-      canvas.drawRRect(rRect, rectPaint);
+        double outOfBoundWidth = (textX - 4) +
+            (rectWidth + 16) -
+            (size.width - rightOffset) +
+            offset;
+        double adjustedTextX = outOfBoundWidth > 0 ? outOfBoundWidth : 0;
+        Rect rect1 = Rect.fromLTWH(
+          textX - 4 - adjustedTextX,
+          textY,
+          rectWidth + 16,
+          12.0 * (tips.length + 1) +
+              4, // +1 for the date time string at the first row
+        );
+        Paint rectPaint = Paint()..color = Colors.white;
+        RRect rRect = RRect.fromRectAndRadius(rect1, const Radius.circular(4));
+        canvas.drawRRect(rRect, rectPaint);
 
-      _tipTextPainter.text = TextSpan(
-        text: tips[-1], // draw datetime
-        style: const TextStyle(
-          color: Colors.black,
-        ),
-      );
-      _tipTextPainter.layout();
+        _tipTextPainter.text = TextSpan(
+          text: tips[-1], // draw datetime
+          style: const TextStyle(
+            color: Colors.black,
+          ),
+        );
+        _tipTextPainter.layout();
 
-      _tipTextPainter.paint(canvas, Offset(textX - adjustedTextX, textY));
+        _tipTextPainter.paint(canvas, Offset(textX - adjustedTextX, textY));
 
-      canvas.drawLine(
-          Offset(textX - adjustedTextX, textY + 18),
-          Offset(textX - adjustedTextX - 8 + rectWidth + 16, textY + 18),
-          _dividerPaint);
+        canvas.drawLine(
+            Offset(textX - adjustedTextX, textY + 18),
+            Offset(textX - adjustedTextX - 8 + rectWidth + 16, textY + 18),
+            _dividerPaint);
 
-      textY = textY + 13;
+        textY = textY + 13;
 
-      int tipRowCount = 1;
-      for (MapEntry entry in tips.entries) {
-        if (entry.key != -1) {
-          Paint circlePaint = Paint()
-            ..color = lineSeriesXCollection[entry.key].color;
-          Offset center =
-              Offset(textX + 4 - adjustedTextX, textY + 14 * tipRowCount);
-          double radius = 4;
-          canvas.drawCircle(center, radius, circlePaint);
+        int tipRowCount = 1;
+        for (MapEntry entry in tips.entries) {
+          if (entry.key != -1) {
+            Paint circlePaint = Paint()
+              ..color = lineSeriesXCollection[entry.key].color;
+            Offset center =
+                Offset(textX + 4 - adjustedTextX, textY + 14 * tipRowCount);
+            double radius = 4;
+            canvas.drawCircle(center, radius, circlePaint);
 
-          _tipTextPainter.text = TextSpan(
-            text: entry.value,
-            style: const TextStyle(
-              color: Colors.black,
-            ),
-          );
-          _tipTextPainter.layout();
+            _tipTextPainter.text = TextSpan(
+              text: entry.value,
+              style: const TextStyle(
+                color: Colors.black,
+              ),
+            );
+            _tipTextPainter.layout();
 
-          _tipTextPainter.paint(
-              canvas,
-              Offset(textX - adjustedTextX + 10,
-                  (textY + 14 * tipRowCount) - _tipTextPainter.height / 2));
+            _tipTextPainter.paint(
+                canvas,
+                Offset(textX - adjustedTextX + 10,
+                    (textY + 14 * tipRowCount) - _tipTextPainter.height / 2));
 
-          tipRowCount += 1;
+            tipRowCount += 1;
+          }
         }
       }
     }
@@ -429,7 +439,7 @@ class LineChartPainter extends CustomPainter {
       if (firstIndex != -1) {
         for (int i = firstIndex; i < data.length; i++) {
           double currentScaleX =
-              (data[i].dateTime.difference(minDate).inSeconds * xStep);
+              (data[i].dateTime.difference(minDate!).inSeconds * xStep);
           double? currentScaleY = data[i].value == null
               ? null
               : (maxValue - data[i].value!) * yStep;
@@ -477,7 +487,7 @@ class LineChartPainter extends CustomPainter {
           // line series value 不是全部都是 null, 至少有一個 value 不是null
           for (int j = firstIndex; j < data.length; j++) {
             double currentScaleX =
-                (data[j].dateTime.difference(minDate).inSeconds * xStep);
+                (data[j].dateTime.difference(minDate!).inSeconds * xStep);
             double? currentScaleY = data[j].value == null
                 ? null
                 : (maxValues[i] - data[j].value!) * yStep;
@@ -555,13 +565,22 @@ class LineChartPainter extends CustomPainter {
       canvas.translate(leftOffset + offset, 0);
     }
 
-    double xStep = (size.width * scale - rightOffset) / xRange;
+    double xStep = 0.0;
 
-    _drawXAxisLabelAndVerticalGridLine(
-      canvas: canvas,
-      size: size,
-      xStep: xStep,
-    );
+    // 如果沒有資料點, xRange = 0
+    if (xRange == 0) {
+      xStep = (size.width * scale - rightOffset) / 1;
+    } else {
+      xStep = (size.width * scale - rightOffset) / xRange;
+    }
+
+    if (xRange != 0) {
+      _drawXAxisLabelAndVerticalGridLine(
+        canvas: canvas,
+        size: size,
+        xStep: xStep,
+      );
+    }
 
     // Draw line series
     if (showMultipleYAxises) {

@@ -6,9 +6,13 @@ class LineSeries {
     required this.name,
     required this.dataList,
     required this.color,
+    this.maxYAxisValue,
+    this.minYAxisValue,
   });
 
   final String name;
   final List<DateValuePair> dataList;
   final Color color;
+  final double? maxYAxisValue;
+  final double? minYAxisValue;
 }

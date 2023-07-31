@@ -40,6 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
     required List data,
     required Color color,
     required String name,
+    double? maxYAxisValue,
+    double? minYAxisValue,
   }) {
     List<DateValuePair> dataList = [];
     for (int i = 0; i < data.length; i++) {
@@ -55,6 +57,8 @@ class _MyHomePageState extends State<MyHomePage> {
       name: name,
       dataList: dataList,
       color: color,
+      maxYAxisValue: maxYAxisValue,
+      minYAxisValue: minYAxisValue,
     );
 
     return lineSeries;
@@ -67,17 +71,19 @@ class _MyHomePageState extends State<MyHomePage> {
     _lineSeriesCollection0 = [
       _getChartData(
         data: [
-          // {"time": "2022-09-16 00:41:38", "value": "null"},
-          // {"time": "2022-09-16 00:51:39", "value": "null"},
-          // {"time": "2022-09-16 01:01:38", "value": "null"},
+          // {"time": "2022-09-16 00:41:38", "value": "20"},
+          // {"time": "2022-09-16 00:51:39", "value": "30"},
+          {"time": "2022-09-16 01:01:38", "value": "null"},
         ],
         color: Colors.red,
         name: 'Line0',
+        maxYAxisValue: 4000,
+        minYAxisValue: 0,
       ),
       _getChartData(
         data: [
           // {"time": "2022-09-16 00:41:38", "value": "null"},
-          // {"time": "2022-09-16 00:51:39", "value": "null"},
+          {"time": "2022-09-16 00:51:39", "value": "56"},
           // {"time": "2022-09-16 01:01:38", "value": "null"},
         ],
         color: Colors.orange,
@@ -200,77 +206,77 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(
               height: 30.0,
             ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
-              showLegend: true,
-              showMultipleYAxises: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection0,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection0,
-              title: _lineSeriesCollection0[0].name,
-              showLegend: false,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection0,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection0,
-              title: _lineSeriesCollection0[0].name,
-              showLegend: true,
-              showMultipleYAxises: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection1,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection1,
-              showLegend: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection2,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection2,
-              showLegend: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection3,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection3,
-              showLegend: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection4,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection4,
-              showLegend: true,
-            ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
+            //   showLegend: true,
+            //   showMultipleYAxises: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollection0,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollection0,
+            //   title: _lineSeriesCollection0[0].name,
+            //   showLegend: false,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollection0,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollection0,
+            //   title: _lineSeriesCollection0[0].name,
+            //   showLegend: true,
+            //   showMultipleYAxises: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollection1,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollection1,
+            //   showLegend: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollection2,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollection2,
+            //   showLegend: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollection3,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollection3,
+            //   showLegend: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollection4,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollection4,
+            //   showLegend: true,
+            // ),
           ],
         ),
       ),
