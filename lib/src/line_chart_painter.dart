@@ -187,7 +187,7 @@ class LineChartPainter extends CustomPainter {
 
       // String time = DateFormat('HH:mm:ss').format(dateTime);
 
-      String date = DateFormat('yy-MM-dd').format(dateTimeScalePoint);
+      String date = DateFormat('yyyy-MM-dd').format(dateTimeScalePoint);
 
       String time = DateFormat('HH:mm:ss').format(dateTimeScalePoint);
 
