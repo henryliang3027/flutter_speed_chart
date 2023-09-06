@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_chart/src/date_value_pair.dart';
 import 'package:flutter_speed_chart/src/legend.dart';
 import 'package:flutter_speed_chart/src/line_chart_painter.dart';
 import 'package:flutter_speed_chart/src/line_series.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_speed_chart/src/value_pair.dart';
 
 class LineSeriesX {
   const LineSeriesX({
@@ -18,8 +17,8 @@ class LineSeriesX {
 
   final String name;
   final Color color;
-  final List<DateValuePair> dataList;
-  final Map<DateTime, double?> dataMap;
+  final List<ValuePair> dataList;
+  final Map<dynamic, double?> dataMap;
   final List<int> startIndexes;
   final double? maxYAxisValue;
   final double? minYAxisValue;
@@ -56,8 +55,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
   double _minValue = 0.0;
   double _maxValue = 0.0;
-  DateTime? _minDate;
-  DateTime? _maxDate;
+  // DateTime? _minDate;
+  // DateTime? _maxDate;
   double _xRange = 0.0;
   double _yRange = 0.0;
 
@@ -74,17 +73,18 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
   List<LineSeriesX> _getLineSeriesXCollection() {
     List<LineSeriesX> lineSeriesXCollection = [];
+
     for (LineSeries lineSeries in widget.lineSeriesCollection) {
-      Map<DateTime, double?> dataMap = {};
+      Map<dynamic, double?> dataMap = {};
       List<int> startIndexes = [];
 
       for (int i = 0; i < lineSeries.dataList.length; i++) {
-        DateTime dateTime = lineSeries.dataList[i].dateTime;
-        double? value = lineSeries.dataList[i].value;
-        dataMap[dateTime] = value;
+        dynamic x = lineSeries.dataList[i].x;
+        double? y = lineSeries.dataList[i].y;
+        dataMap[x] = y;
 
         if (i > 0) {
-          if (value != null && lineSeries.dataList[i - 1].value == null) {
+          if (y != null && lineSeries.dataList[i - 1].y == null) {
             startIndexes.add(i);
           }
         }
@@ -223,23 +223,23 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   }
 
   void setMinValueAndMaxValueForMultipleYAxis() {
-    List<double?> allValues = _lineSeriesXCollection
+    List allValues = _lineSeriesXCollection
         .expand((lineSeries) => lineSeries.dataMap.values)
         .toList();
 
     allValues.removeWhere((element) => element == null);
 
-    List<double?> allNonNullValues = [];
+    List allNonNullValues = [];
     allNonNullValues.addAll(allValues);
 
     // 如果有資料點
     if (allNonNullValues.isNotEmpty) {
       for (LineSeriesX lineSeries in _lineSeriesXCollection) {
-        List<double?> values = lineSeries.dataMap.values.toList();
+        List values = lineSeries.dataMap.values.toList();
 
         values.removeWhere((element) => element == null);
 
-        List<double?> nonNullValues = [];
+        List nonNullValues = [];
         nonNullValues.addAll(values);
 
         double tempMinValue = 0.0;
@@ -297,39 +297,43 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     }
   }
 
-  void setMinDateAndMaxDate() {
-    List<DateTime> allDateTimes = _lineSeriesXCollection
-        .expand((lineSeries) => lineSeries.dataMap.keys)
-        .toList();
+  // void setMinDateAndMaxDate() {
+  //   List<DateTime> allDateTimes = _lineSeriesXCollection
+  //       .expand((lineSeries) => lineSeries.dataMap.keys)
+  //       .toList();
 
-    if (allDateTimes.isNotEmpty) {
-      _minDate = allDateTimes.map((dateTime) => dateTime).reduce(
-          (value, element) => value.isBefore(element) ? value : element);
-      _maxDate = allDateTimes
-          .map((dateTime) => dateTime)
-          .reduce((value, element) => value.isAfter(element) ? value : element);
-    } else {
-      _minDate = null;
-      _maxDate = null;
-    }
-  }
+  //   if (allDateTimes.isNotEmpty) {
+  //     _minDate = allDateTimes.map((dateTime) => dateTime).reduce(
+  //         (value, element) => value.isBefore(element) ? value : element);
+  //     _maxDate = allDateTimes
+  //         .map((dateTime) => dateTime)
+  //         .reduce((value, element) => value.isAfter(element) ? value : element);
+  //   } else {
+  //     _minDate = null;
+  //     _maxDate = null;
+  //   }
+  // }
 
   void setXRangeAndYRange() {
-    if (_minDate != null && _maxDate != null) {
-      _xRange = _maxDate!.difference(_minDate!).inSeconds.toDouble();
-    } else {
-      _xRange = 0.0;
-    }
+    // if (_minDate != null && _maxDate != null) {
+    //   _xRange = _maxDate!.difference(_minDate!).inSeconds.toDouble();
+    // } else {
+    //   _xRange = 0.0;
+    // }
+
+    _xRange = _longestLineSeriesX.dataList.length * 1.0;
 
     _yRange = _maxValue - _minValue;
   }
 
   void setXRangeAndYRangeForMultipleYAxis() {
-    if (_minDate != null && _maxDate != null) {
-      _xRange = _maxDate!.difference(_minDate!).inSeconds.toDouble();
-    } else {
-      _xRange = 0.0;
-    }
+    // if (_minDate != null && _maxDate != null) {
+    //   _xRange = _maxDate!.difference(_minDate!).inSeconds.toDouble();
+    // } else {
+    //   _xRange = 0.0;
+    // }
+
+    _xRange = _longestLineSeriesX.dataList.length * 1.0;
 
     for (int i = 0; i < _lineSeriesXCollection.length; i++) {
       double yRanges = _maxValues[i] - _minValues[i];
@@ -349,11 +353,11 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
     if (widget.showMultipleYAxises) {
       setMinValueAndMaxValueForMultipleYAxis();
-      setMinDateAndMaxDate();
+      // setMinDateAndMaxDate();
       setXRangeAndYRangeForMultipleYAxis();
     } else {
       setMinValueAndMaxValue();
-      setMinDateAndMaxDate();
+      // setMinDateAndMaxDate();
       setXRangeAndYRange();
     }
   }
@@ -470,8 +474,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               scale: _scale,
               minValue: _minValue,
               maxValue: _maxValue,
-              minDate: _minDate,
-              maxDate: _maxDate,
+              // minDate: _minDate,
+              // maxDate: _maxDate,
               xRange: _xRange,
               yRange: _yRange,
               showMultipleYAxises: widget.showMultipleYAxises,

@@ -1,4 +1,5 @@
 import 'package:example/data_1_1.dart';
+import 'package:example/data_1p8g_1.dart';
 import 'package:example/data_3.dart';
 import 'package:example/data_3_3.dart';
 import 'package:example/data_3_3_3.dart';
@@ -35,6 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<LineSeries> _lineSeriesCollection4 = [];
   List<LineSeries> _lineSeriesCollectionDsimAPT = [];
   List<LineSeries> _lineSeriesCollectionDsimVoltage = [];
+  List<LineSeries> _lineSeriesCollection1p8G1 = [];
 
   LineSeries _getChartData({
     required List data,
@@ -43,14 +45,42 @@ class _MyHomePageState extends State<MyHomePage> {
     double? maxYAxisValue,
     double? minYAxisValue,
   }) {
-    List<DateValuePair> dataList = [];
+    List<ValuePair> dataList = [];
     for (int i = 0; i < data.length; i++) {
       var d = data[i];
       DateTime dateTime = DateTime.parse(d['time'].toString());
       double? value =
           d['value'] == 'null' ? null : double.parse(d['value'].toString());
 
-      dataList.add(DateValuePair(dateTime: dateTime, value: value));
+      dataList.add(ValuePair(x: dateTime, y: value));
+    }
+
+    LineSeries lineSeries = LineSeries(
+      name: name,
+      dataList: dataList,
+      color: color,
+      maxYAxisValue: maxYAxisValue,
+      minYAxisValue: minYAxisValue,
+    );
+
+    return lineSeries;
+  }
+
+  LineSeries _getGenericTypeChartData({
+    required List data,
+    required Color color,
+    required String name,
+    double? maxYAxisValue,
+    double? minYAxisValue,
+  }) {
+    List<ValuePair> dataList = [];
+    for (int i = 0; i < data.length; i++) {
+      var d = data[i];
+      double freq = double.parse(d['freq'].toString());
+      double? level =
+          d['level'] == 'null' ? null : double.parse(d['level'].toString());
+
+      dataList.add(ValuePair(x: freq, y: level));
     }
 
     LineSeries lineSeries = LineSeries(
@@ -71,24 +101,30 @@ class _MyHomePageState extends State<MyHomePage> {
     _lineSeriesCollection0 = [
       _getChartData(
         data: [
-          // {"time": "2022-09-16 00:41:38", "value": "20"},
-          // {"time": "2022-09-16 00:51:39", "value": "30"},
-          {"time": "2022-09-16 01:01:38", "value": "null"},
+          {"time": "2022-09-16 00:51:38", "value": "20"},
+          {"time": "2022-09-16 00:41:39", "value": "30"},
+          {"time": "2022-09-16 01:01:38", "value": "22"},
+          {"time": "2022-09-16 00:52:28", "value": "20"},
+          {"time": "2022-09-16 03:41:39", "value": "70"},
+          {"time": "2022-09-16 01:03:38", "value": "62"},
+          {"time": "2022-09-16 02:51:38", "value": "50"},
+          {"time": "2022-09-16 04:43:39", "value": "40"},
+          {"time": "2022-09-16 07:07:38", "value": "32"},
         ],
         color: Colors.red,
         name: 'Line0',
         maxYAxisValue: 4000,
         minYAxisValue: 0,
       ),
-      _getChartData(
-        data: [
-          // {"time": "2022-09-16 00:41:38", "value": "null"},
-          {"time": "2022-09-16 00:51:39", "value": "56"},
-          // {"time": "2022-09-16 01:01:38", "value": "null"},
-        ],
-        color: Colors.orange,
-        name: 'Line1',
-      ),
+      // _getChartData(
+      //   data: [
+      //     // {"time": "2022-09-16 00:41:38", "value": "null"},
+      //     {"time": "2022-09-16 00:51:39", "value": "56"},
+      //     // {"time": "2022-09-16 01:01:38", "value": "null"},
+      //   ],
+      //   color: Colors.orange,
+      //   name: 'Line1',
+      // ),
     ];
 
     _lineSeriesCollection1 = [
@@ -183,6 +219,14 @@ class _MyHomePageState extends State<MyHomePage> {
         name: 'Temperature',
       ),
     ];
+
+    _lineSeriesCollection1p8G1 = [
+      _getGenericTypeChartData(
+        data: jsonData1p8g_1,
+        color: Colors.red,
+        name: 'RF Level',
+      ),
+    ];
   }
 
   @override
@@ -195,40 +239,40 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollectionDsimAPT,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollectionDsimAPT,
+            //   showLegend: true,
+            //   showMultipleYAxises: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
+            //   showLegend: true,
+            //   showMultipleYAxises: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
             _Counter(
-              lineSeriesCollection: _lineSeriesCollectionDsimAPT,
+              lineSeriesCollection: _lineSeriesCollection0,
             ),
             SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollectionDsimAPT,
-              showLegend: true,
-              showMultipleYAxises: true,
+              lineSeriesCollection: _lineSeriesCollection0,
+              title: _lineSeriesCollection0[0].name,
+              showLegend: false,
             ),
             const SizedBox(
               height: 30.0,
             ),
             // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
-            //   showLegend: true,
-            //   showMultipleYAxises: true,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            //   title: _lineSeriesCollection0[0].name,
-            //   showLegend: false,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-            // _Counter(
             //   lineSeriesCollection: _lineSeriesCollection0,
             // ),
             // SpeedLineChart(
@@ -277,6 +321,17 @@ class _MyHomePageState extends State<MyHomePage> {
             //   lineSeriesCollection: _lineSeriesCollection4,
             //   showLegend: true,
             // ),
+
+            const SizedBox(
+              height: 30.0,
+            ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollection1p8G1,
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollection1p8G1,
+              showLegend: true,
+            ),
           ],
         ),
       ),

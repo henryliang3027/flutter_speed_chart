@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_chart/src/date_value_pair.dart';
+import 'package:flutter_speed_chart/src/value_pair.dart';
 
 class LineSeries {
   const LineSeries({
@@ -11,7 +11,7 @@ class LineSeries {
   });
 
   final String name;
-  final List<DateValuePair> dataList;
+  final List<ValuePair> dataList;
   final Color color;
   final double? maxYAxisValue;
   final double? minYAxisValue;
