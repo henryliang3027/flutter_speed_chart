@@ -130,7 +130,7 @@ SpeedLineChart(
         
 ## Knowledge
 
-一些需要的數值：  
+整理一些基本知識：  
 原始資料點(x,y) : (DateTime, Value)  
 ```_minDate //最早的日期時間```   
 ```_maxDate //最晚的日期時間```  
