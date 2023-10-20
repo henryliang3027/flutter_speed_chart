@@ -388,8 +388,6 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         {double extraX = 0.0}) {
       var widgetWidth = context.size!.width;
 
-      newScale = newScale.clamp(1.0, 30.0);
-
       // 根據縮放焦點算出圖的起始點
       double left = calculateOffsetX(newScale, focusX);
       print('left: $left');
@@ -419,12 +417,21 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       },
       onScaleUpdate: (details) {
         double newScale = (_lastScaleValue * details.scale);
+        double xStep = 0.0;
 
         _deltaFocalPointX = (details.focalPoint.dx - _lastUpdateFocalPointX);
         _lastUpdateFocalPointX = details.focalPoint.dx;
 
-        updateScaleAndScrolling(newScale, _focalPointX,
-            extraX: _deltaFocalPointX);
+        if (_xRange == 0) {
+          xStep = (widgetWidth * newScale - _rightOffset) / 1;
+        } else {
+          xStep = (widgetWidth * newScale - _rightOffset) / (_xRange - 1);
+        }
+
+        if (xStep < widgetWidth - _rightOffset) {
+          updateScaleAndScrolling(newScale, _focalPointX,
+              extraX: _deltaFocalPointX);
+        }
       },
       onScaleEnd: (details) {},
       onLongPressMoveUpdate: (details) {
