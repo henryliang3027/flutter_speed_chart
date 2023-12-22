@@ -5,6 +5,7 @@ import 'package:example/data_3_3.dart';
 import 'package:example/data_3_3_3.dart';
 import 'package:example/data_3_3_3_3.dart';
 import 'package:example/data_dsim_1.dart';
+import 'package:example/rf_data_1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/speed_chart.dart';
 
@@ -37,6 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<LineSeries> _lineSeriesCollectionDsimAPT = [];
   List<LineSeries> _lineSeriesCollectionDsimVoltage = [];
   List<LineSeries> _lineSeriesCollection1p8G1 = [];
+  List<LineSeries> _lineSeriesCollection1p8GRFOutputs = [];
 
   LineSeries _getChartData({
     required List data,
@@ -227,6 +229,14 @@ class _MyHomePageState extends State<MyHomePage> {
         name: 'RF Level',
       ),
     ];
+
+    _lineSeriesCollection1p8GRFOutputs = [
+      _getGenericTypeChartData(
+        data: rfOutputs,
+        color: Colors.blue,
+        name: 'RFLevel',
+      ),
+    ];
   }
 
   @override
@@ -262,11 +272,11 @@ class _MyHomePageState extends State<MyHomePage> {
             //   height: 30.0,
             // ),
             _Counter(
-              lineSeriesCollection: _lineSeriesCollection0,
+              lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
             ),
             SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection0,
-              title: _lineSeriesCollection0[0].name,
+              lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
+              title: _lineSeriesCollection1p8GRFOutputs[0].name,
               showLegend: false,
             ),
             const SizedBox(
@@ -322,16 +332,16 @@ class _MyHomePageState extends State<MyHomePage> {
             //   showLegend: true,
             // ),
 
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection1p8G1,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection1p8G1,
-              showLegend: true,
-            ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollection1p8G1,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollection1p8G1,
+            //   showLegend: true,
+            // ),
           ],
         ),
       ),

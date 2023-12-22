@@ -83,7 +83,7 @@ class LineChartPainter extends CustomPainter {
     double closestDistance = double.infinity;
     int? closestIndex;
 
-    if (longestLineSeriesX.dataMap.isNotEmpty) {
+    if (longestLineSeriesX.dataList.isNotEmpty) {
       // for (DateTime dateTime in longestLineSeriesX.dataMap.keys) {
       //   // because sthe start point of line series is in canvas.translate(leftOffset + offset, 0);
       //   // add offsetX to adjust the difference between target datetime and min datetime
@@ -99,7 +99,7 @@ class LineChartPainter extends CustomPainter {
       //   }
       // }
 
-      for (int i = 0; i < longestLineSeriesX.dataMap.length; i++) {
+      for (int i = 0; i < longestLineSeriesX.dataList.length; i++) {
         // because sthe start point of line series is in canvas.translate(leftOffset + offset, 0);
         // add offsetX to adjust the difference between target datetime and min datetime
         double distance = (i * xStep + offsetX - x).abs();
@@ -344,16 +344,19 @@ class LineChartPainter extends CustomPainter {
           _verticalLinePaint,
         );
 
-        List<dynamic> keys = longestLineSeriesX.dataMap.keys.toList();
         String formatXLabel = '';
 
-        if (keys[closestIndex] is DateTime) {
-          formatXLabel = _formatDate(keys[closestIndex]);
+        if (longestLineSeriesX.dataList[closestIndex].x is DateTime) {
+          DateTime closestDateTime =
+              longestLineSeriesX.dataList[closestIndex].x as DateTime;
+          formatXLabel = _formatDate(closestDateTime);
         } else {
-          formatXLabel = keys[closestIndex].toString();
+          int closestX = longestLineSeriesX.dataList[closestIndex].x as int;
+          formatXLabel = closestX.toString();
         }
 
-        List<Map<int, double?>> valueMapList = _getYByX(keys[closestIndex]);
+        List<Map<int, double?>> valueMapList =
+            _getYByX(longestLineSeriesX.dataList[closestIndex].x);
 
         Map<int, String> tips = {-1: formatXLabel};
 
