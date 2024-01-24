@@ -416,7 +416,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         _lastUpdateFocalPointX = details.focalPoint.dx;
       },
       onScaleUpdate: (details) {
-        double newScale = (_lastScaleValue * details.scale);
+        // newScale >= 1.0, 否則計算 left.clamp((newScale - 1) * -widgetWidth, 0.0) 時範圍會錯誤
+        double newScale = (_lastScaleValue * details.scale) >= 1.0
+            ? (_lastScaleValue * details.scale)
+            : 1.0;
         double xStep = 0.0;
 
         _deltaFocalPointX = (details.focalPoint.dx - _lastUpdateFocalPointX);
