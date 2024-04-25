@@ -128,6 +128,24 @@ class LineChartPainter extends CustomPainter {
     return valueMapList;
   }
 
+  List<Map<int, double?>> _getYByClosetIndex(int index) {
+    List<Map<int, double?>> valueMapList = [];
+    for (int i = 0; i < lineSeriesXCollection.length; i++) {
+      LineSeriesX lineSeriesX = lineSeriesXCollection[i];
+      Map<int, double?> valueMap = {};
+
+      if (index >= lineSeriesX.dataList.length) {
+        valueMap[i] = null;
+      } else {
+        valueMap[i] = lineSeriesX.dataList[index].y;
+      }
+
+      valueMapList.add(valueMap);
+    }
+    // valueMapList = [{'name': value},{'name': value}]
+    return valueMapList;
+  }
+
   String _formatDate(DateTime date) {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(date).toString();
   }
@@ -355,8 +373,7 @@ class LineChartPainter extends CustomPainter {
           formatXLabel = closestX.toString();
         }
 
-        List<Map<int, double?>> valueMapList =
-            _getYByX(longestLineSeriesX.dataList[closestIndex].x);
+        List<Map<int, double?>> valueMapList = _getYByClosetIndex(closestIndex);
 
         Map<int, String> tips = {-1: formatXLabel};
 
