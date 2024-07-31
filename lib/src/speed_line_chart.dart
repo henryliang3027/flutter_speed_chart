@@ -367,6 +367,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     double widgetWidth = MediaQuery.of(context).size.width;
     double widgetHeight = 200;
 
+    final Paint axisPaint = Paint()
+      ..color = Theme.of(context).colorScheme.onSurface
+      ..strokeWidth = 1;
+
     double calculateOffsetX(
       double newScale,
       double focusOnScreen,
@@ -492,6 +496,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               minValues: _minValues,
               maxValues: _maxValues,
               yRanges: _yRanges,
+              axisPaint: axisPaint,
             ),
           ),
           const SizedBox(

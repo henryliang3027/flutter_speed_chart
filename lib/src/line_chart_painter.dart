@@ -24,6 +24,7 @@ class LineChartPainter extends CustomPainter {
     required this.minValues,
     required this.maxValues,
     required this.yRanges,
+    required this.axisPaint,
   });
 
   final List<LineSeriesX> lineSeriesXCollection;
@@ -44,6 +45,7 @@ class LineChartPainter extends CustomPainter {
   final List<double> minValues;
   final List<double> maxValues;
   final List<double> yRanges;
+  final Paint axisPaint;
 
   final TextPainter _axisLabelPainter = TextPainter(
     textAlign: TextAlign.right,
@@ -57,10 +59,6 @@ class LineChartPainter extends CustomPainter {
 
   final Paint _gridPaint = Paint()
     ..color = Colors.grey.withOpacity(0.4)
-    ..strokeWidth = 1;
-
-  final Paint _axisPaint = Paint()
-    ..color = Colors.black
     ..strokeWidth = 1;
 
   final Paint _verticalLinePaint = Paint()
@@ -156,7 +154,10 @@ class LineChartPainter extends CustomPainter {
     required Size size,
   }) {
     canvas.drawLine(
-        Offset(leftOffset, 0), Offset(leftOffset, size.height), _axisPaint);
+      Offset(leftOffset, 0),
+      Offset(leftOffset, size.height),
+      axisPaint,
+    );
   }
 
   // Draw X-Axis
@@ -164,8 +165,11 @@ class LineChartPainter extends CustomPainter {
     required Canvas canvas,
     required Size size,
   }) {
-    canvas.drawLine(Offset(leftOffset, size.height),
-        Offset(size.width + leftOffset - rightOffset, size.height), _axisPaint);
+    canvas.drawLine(
+      Offset(leftOffset, size.height),
+      Offset(size.width + leftOffset - rightOffset, size.height),
+      axisPaint,
+    );
   }
 
   void _drawXAxisForMultipleYAxises({
@@ -175,9 +179,10 @@ class LineChartPainter extends CustomPainter {
     double newLeftOffset = leftOffset + 40 * (lineSeriesXCollection.length - 1);
 
     canvas.drawLine(
-        Offset(newLeftOffset, size.height),
-        Offset(size.width + newLeftOffset - rightOffset, size.height),
-        _axisPaint);
+      Offset(newLeftOffset, size.height),
+      Offset(size.width + newLeftOffset - rightOffset, size.height),
+      axisPaint,
+    );
   }
 
   void _drawXAxisLineAndText({
@@ -195,21 +200,22 @@ class LineChartPainter extends CustomPainter {
       xLabel = x.toString();
     }
 
+    _axisLabelPainter.text = TextSpan(
+      text: xLabel,
+      style: TextStyle(
+        fontSize: 12,
+        color: axisPaint.color,
+      ),
+    );
+
+    // Draw label
+    _axisLabelPainter.layout();
+
     // 如果自會超過最左邊的邊界就不畫
     if (scaleX - _axisLabelPainter.width > 0) {
       canvas.drawLine(
           Offset(scaleX, 0), Offset(scaleX, size.height), _gridPaint);
 
-      _axisLabelPainter.text = TextSpan(
-        text: xLabel,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Colors.black,
-        ),
-      );
-
-      // Draw label
-      _axisLabelPainter.layout();
       _axisLabelPainter.paint(
           canvas, Offset(scaleX - _axisLabelPainter.width, size.height));
     }
@@ -270,9 +276,9 @@ class LineChartPainter extends CustomPainter {
       String label = (i * yInterval + minValue).toStringAsFixed(0);
       _axisLabelPainter.text = TextSpan(
         text: label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
-          color: Colors.black,
+          color: axisPaint.color,
         ),
       );
       _axisLabelPainter.layout();
@@ -292,8 +298,11 @@ class LineChartPainter extends CustomPainter {
       double newLeftOffset = leftOffset + 40 * i;
 
       // Draw Y-Axis
-      canvas.drawLine(Offset(newLeftOffset, 0),
-          Offset(newLeftOffset, size.height), _axisPaint);
+      canvas.drawLine(
+        Offset(newLeftOffset, 0),
+        Offset(newLeftOffset, size.height),
+        axisPaint,
+      );
 
       int yScalePoints = 5;
       double yInterval = yRanges[i] / yScalePoints;
@@ -311,18 +320,24 @@ class LineChartPainter extends CustomPainter {
 
         // Draw Y-axis scale points
         String label = (j * yInterval + minValues[i]).toStringAsFixed(0);
-        _axisLabelPainter.text = TextSpan(
+
+        TextPainter multipleYAxisLabelPainter = TextPainter(
+          textAlign: TextAlign.right,
+          textDirection: ui.TextDirection.ltr,
+        );
+
+        multipleYAxisLabelPainter.text = TextSpan(
           text: label,
           style: TextStyle(
             fontSize: 12,
             color: lineSeries.color,
           ),
         );
-        _axisLabelPainter.layout();
-        _axisLabelPainter.paint(
+        multipleYAxisLabelPainter.layout();
+        multipleYAxisLabelPainter.paint(
             canvas,
-            Offset(newLeftOffset - _axisLabelPainter.width - 2,
-                scaleY - _axisLabelPainter.height / 2));
+            Offset(newLeftOffset - multipleYAxisLabelPainter.width - 2,
+                scaleY - multipleYAxisLabelPainter.height / 2));
       }
     }
   }
