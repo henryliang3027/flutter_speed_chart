@@ -25,6 +25,7 @@ class LineChartPainter extends CustomPainter {
     required this.maxValues,
     required this.yRanges,
     required this.axisPaint,
+    required this.verticalLinePaint,
   });
 
   final List<LineSeriesX> lineSeriesXCollection;
@@ -46,6 +47,7 @@ class LineChartPainter extends CustomPainter {
   final List<double> maxValues;
   final List<double> yRanges;
   final Paint axisPaint;
+  final Paint verticalLinePaint;
 
   final TextPainter _axisLabelPainter = TextPainter(
     textAlign: TextAlign.right,
@@ -60,12 +62,6 @@ class LineChartPainter extends CustomPainter {
   final Paint _gridPaint = Paint()
     ..color = Colors.grey.withOpacity(0.4)
     ..strokeWidth = 1;
-
-  final Paint _verticalLinePaint = Paint()
-    ..color = Colors.black
-    ..strokeWidth = 1.0
-    ..strokeCap = StrokeCap.round
-    ..style = PaintingStyle.stroke;
 
   final Paint _dividerPaint = Paint()
     ..color = Colors.black
@@ -374,7 +370,7 @@ class LineChartPainter extends CustomPainter {
         canvas.drawLine(
           Offset((closestIndex * xStep), 0),
           Offset((closestIndex * xStep), size.height),
-          _verticalLinePaint,
+          verticalLinePaint,
         );
 
         String formatXLabel = '';

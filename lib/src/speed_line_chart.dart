@@ -371,6 +371,12 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       ..color = Theme.of(context).colorScheme.onSurface
       ..strokeWidth = 1;
 
+    final Paint verticalLinePaint = Paint()
+      ..color = Theme.of(context).colorScheme.onSurface
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
     double calculateOffsetX(
       double newScale,
       double focusOnScreen,
@@ -497,6 +503,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               maxValues: _maxValues,
               yRanges: _yRanges,
               axisPaint: axisPaint,
+              verticalLinePaint: verticalLinePaint,
             ),
           ),
           const SizedBox(
