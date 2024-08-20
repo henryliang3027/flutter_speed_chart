@@ -1,4 +1,7 @@
+import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_chart/src/constants.dart';
 import 'package:flutter_speed_chart/src/legend.dart';
 import 'package:flutter_speed_chart/src/line_chart_painter.dart';
 import 'package:flutter_speed_chart/src/line_series.dart';
@@ -46,8 +49,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   bool _showTooltip = false;
 
   double _longPressX = 0.0;
-  final double _leftOffset = 50;
-  final double _rightOffset = 60;
+  double _leftOffset = 0;
+  final double _rightOffset = 8;
 
   double _offset = 0.0;
   double _scale = 1.0;
@@ -70,6 +73,14 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   double _deltaFocalPointX = 0.0;
   late final LineSeriesX _longestLineSeriesX;
   late final List<LineSeriesX> _lineSeriesXCollection;
+
+  final double _maxScale = 30.0;
+  // ==== 缩放滑钮
+  double _leftSlidingBtnLeft = 0.0;
+  double _lastLeftSlidingBtnLeft = 0.0;
+  double _rightSlidingBtnRight = 0.0;
+  double _lastRightSlidingBtnRight = 0.0;
+  double _lastSlidingBarPosition = 0.0;
 
   List<LineSeriesX> _getLineSeriesXCollection() {
     List<LineSeriesX> lineSeriesXCollection = [];
@@ -414,6 +425,203 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       });
     }
 
+    // 左邊按鈕的滑動操作
+    _onLBHorizontalDragDown(DragStartDetails details) {
+      _lastLeftSlidingBtnLeft = details.globalPosition.dx - _leftSlidingBtnLeft;
+    }
+
+    _onLBHorizontalDragUpdate(DragUpdateDetails details) {
+      var widgetWidth = context.size!.width;
+      var maxViewportWidth = widgetWidth - slidingButtonWidth * 2;
+
+      var newLOffsetX = details.globalPosition.dx - _lastLeftSlidingBtnLeft;
+
+      // 根据最大缩放倍数, 限制滑动的最大距离.
+      // Viewport: 窗口指的是两个滑块(不含滑块自身)中间的内容, 即左滑钮的右边到右滑钮的左边的距离.
+      // 最大窗口宽 / 最大倍数 = 最小的窗口宽.
+      double minViewportWidth = maxViewportWidth / _maxScale;
+      // 最大窗口宽 - 最小窗口宽 - 当前右边的偏移量 = 当前左边的最大偏移量
+      double maxLeft =
+          maxViewportWidth - minViewportWidth - _rightSlidingBtnRight;
+      newLOffsetX = newLOffsetX.clamp(0.0, maxLeft);
+
+      // 得到当前的窗口大小
+      double viewportWidth =
+          maxViewportWidth - newLOffsetX - _rightSlidingBtnRight;
+      // 最大窗口大小 / 当前窗口大小 = 应该缩放的倍数
+      double newScale = maxViewportWidth / viewportWidth;
+      // 计算缩放后的左偏移量
+      double newOffsetX = calculateOffsetX(newScale, widgetWidth);
+
+      setState(() {
+        _leftSlidingBtnLeft = newLOffsetX;
+        _scale = newScale;
+        _offset = newOffsetX;
+      });
+    }
+
+    _onLBHorizontalDragEnd(DragEndDetails details) {}
+
+    // 滑鈕中間的空白區域的拖曳操作
+    _onSlidingBarHorizontalDragStart(DragStartDetails details) {
+      _lastSlidingBarPosition = details.globalPosition.dx;
+    }
+
+    _onSlidingBarHorizontalDragUpdate(DragUpdateDetails details) {
+      var widgetWidth = context.size!.width;
+
+      // 得到本次滑动的偏移量, 乘倍数后和之前的偏移量相减等于新的偏移量
+      var deltaX = (details.globalPosition.dx - _lastSlidingBarPosition);
+      _lastSlidingBarPosition = details.globalPosition.dx;
+      double left = _offset - deltaX * _scale;
+
+      // 将x范围限制图表宽度内
+      double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
+
+      // 同步缩略滑钮的状态
+      var maxViewportWidth = widgetWidth - slidingButtonWidth * 2;
+      double lOffsetX = -newOffsetX / _scale;
+      double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
+
+      double r = maxViewportWidth / widgetWidth;
+      lOffsetX *= r;
+      rOffsetX *= r;
+
+      setState(() {
+        _offset = newOffsetX;
+        _leftSlidingBtnLeft = lOffsetX;
+        _rightSlidingBtnRight = rOffsetX;
+      });
+    }
+
+    _onSlidingBarHorizontalDragEnd(DragEndDetails details) {}
+
+    // 右邊按鈕的滑動操作
+    _onRBHorizontalDragDown(DragStartDetails details) {
+      _lastRightSlidingBtnRight =
+          details.globalPosition.dx + _rightSlidingBtnRight;
+    }
+
+    _onRBHorizontalDragUpdate(DragUpdateDetails details) {
+      var widgetWidth = context.size!.width;
+      var maxViewportWidth = widgetWidth - slidingButtonWidth * 2;
+
+      var newROffsetX = _lastRightSlidingBtnRight - details.globalPosition.dx;
+
+      // 根据最大缩放倍数, 限制滑动的最大距离.
+      // Viewport: 窗口指的是两个滑块(不含滑块自身)中间的内容, 即左滑钮的右边到右滑钮的左边的距离.
+      // 最大窗口宽 / 最大倍数 = 最小的窗口宽.
+      double minViewportWidth = maxViewportWidth / _maxScale;
+      // 最大窗口宽 - 最小窗口宽 - 当前右边的偏移量 = 当前左边的最大偏移量
+      double maxLeft =
+          maxViewportWidth - minViewportWidth - _leftSlidingBtnLeft;
+      newROffsetX = newROffsetX.clamp(0.0, maxLeft);
+
+      // 得到当前的窗口大小
+      double viewportWidth =
+          maxViewportWidth - _leftSlidingBtnLeft - newROffsetX;
+      // 最大窗口大小 / 当前窗口大小 = 应该缩放的倍数
+      double newScale = maxViewportWidth / viewportWidth;
+      // 计算缩放后的左偏移量
+      double newOffsetX = calculateOffsetX(newScale, 0.0);
+
+      setState(() {
+        _rightSlidingBtnRight = newROffsetX;
+        _scale = newScale;
+        _offset = newOffsetX;
+      });
+    }
+
+    _onRBHorizontalDragEnd(DragEndDetails details) {}
+
+    Widget _buildThumbController() {
+      return SizedBox(
+        width: double.infinity,
+        height: 48.0,
+        child: Stack(
+          children: <Widget>[
+            // blank space and drag to scrolling the graph
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              margin: EdgeInsets.only(
+                left: slidingButtonWidth + _leftSlidingBtnLeft,
+                right: slidingButtonWidth + _rightSlidingBtnRight,
+              ),
+              child: GestureDetector(
+                onHorizontalDragStart: _onSlidingBarHorizontalDragStart,
+                onHorizontalDragUpdate: _onSlidingBarHorizontalDragUpdate,
+                onHorizontalDragEnd: _onSlidingBarHorizontalDragEnd,
+              ),
+            ),
+            // left sliding button
+            Container(
+              width: slidingButtonWidth + _leftSlidingBtnLeft,
+              height: double.infinity,
+              padding: EdgeInsets.only(left: _leftSlidingBtnLeft),
+              color: const Color(0x2268838B),
+              child: GestureDetector(
+                onHorizontalDragStart: _onLBHorizontalDragDown,
+                onHorizontalDragUpdate: _onLBHorizontalDragUpdate,
+                onHorizontalDragEnd: _onLBHorizontalDragEnd,
+                child: Container(
+                  height: double.infinity,
+                  width: slidingButtonWidth,
+                  color: kSlidingBtnColor,
+                  child: Icon(Icons.chevron_left),
+                ),
+              ),
+            ),
+            // right sliding button
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                width: slidingButtonWidth + _rightSlidingBtnRight,
+                padding: EdgeInsets.only(right: _rightSlidingBtnRight),
+                height: double.infinity,
+                color: kSlidingBtnScrimColor,
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onHorizontalDragStart: _onRBHorizontalDragDown,
+                  onHorizontalDragUpdate: _onRBHorizontalDragUpdate,
+                  onHorizontalDragEnd: _onRBHorizontalDragEnd,
+                  child: Container(
+                    height: double.infinity,
+                    width: slidingButtonWidth,
+                    color: kSlidingBtnColor,
+                    child: Icon(Icons.chevron_right),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    String maxValueStr = _maxValue.toStringAsFixed(0);
+    String minValueStr = _minValue.toStringAsFixed(0);
+    String maxLengthStr =
+        maxValueStr.length > minValueStr.length ? maxValueStr : minValueStr;
+
+    final TextPainter _textWidthPainter = TextPainter(
+      textAlign: TextAlign.right,
+      textDirection: ui.TextDirection.ltr,
+    );
+
+    _textWidthPainter.text = TextSpan(
+      text: maxLengthStr,
+      style: TextStyle(
+        fontSize: 12,
+        color: axisPaint.color,
+      ),
+    );
+
+    // Draw label
+    _textWidthPainter.layout();
+
+    _leftOffset = _textWidthPainter.width + 10;
+
     return GestureDetector(
       onScaleStart: (details) {
         // 紀錄按下去的點
@@ -474,6 +682,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   ),
                 )
               : Container(),
+          _buildThumbController(),
+          SizedBox(
+            height: 16,
+          ),
           CustomPaint(
             size: Size(
               widgetWidth,

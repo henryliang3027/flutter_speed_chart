@@ -30,6 +30,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<LineSeries> _lineSeriesCollectionEmpty = [];
   List<LineSeries> _lineSeriesCollection0 = [];
   List<LineSeries> _lineSeriesCollection1 = [];
   List<LineSeries> _lineSeriesCollection2 = [];
@@ -78,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<ValuePair> dataList = [];
     for (int i = 0; i < data.length; i++) {
       var d = data[i];
-      double freq = double.parse(d['freq'].toString());
+      int freq = int.parse(d['freq'].toString());
       double? level =
           d['level'] == 'null' ? null : double.parse(d['level'].toString());
 
@@ -99,6 +100,25 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+
+    _lineSeriesCollectionEmpty = [
+      _getChartData(
+        data: [],
+        color: Colors.red,
+        name: 'LineEmpty',
+        maxYAxisValue: 4000,
+        minYAxisValue: 0,
+      ),
+      // _getChartData(
+      //   data: [
+      //     // {"time": "2022-09-16 00:41:38", "value": "null"},
+      //     {"time": "2022-09-16 00:51:39", "value": "56"},
+      //     // {"time": "2022-09-16 01:01:38", "value": "null"},
+      //   ],
+      //   color: Colors.orange,
+      //   name: 'Line1',
+      // ),
+    ];
 
     _lineSeriesCollection0 = [
       _getChartData(
@@ -247,7 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             // _Counter(
             //   lineSeriesCollection: _lineSeriesCollectionDsimAPT,
@@ -277,6 +297,18 @@ class _MyHomePageState extends State<MyHomePage> {
             SpeedLineChart(
               lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
               title: _lineSeriesCollection1p8GRFOutputs[0].name,
+              showLegend: false,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
+
+            _Counter(
+              lineSeriesCollection: [],
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollectionEmpty,
+              title: 'Empty',
               showLegend: false,
             ),
             const SizedBox(
