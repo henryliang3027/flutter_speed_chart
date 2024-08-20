@@ -78,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<ValuePair> dataList = [];
     for (int i = 0; i < data.length; i++) {
       var d = data[i];
-      double freq = double.parse(d['freq'].toString());
+      int freq = int.parse(d['freq'].toString());
       double? level =
           d['level'] == 'null' ? null : double.parse(d['level'].toString());
 
