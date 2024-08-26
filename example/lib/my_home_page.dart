@@ -115,18 +115,18 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
         color: Colors.red,
         name: 'Line0',
-        maxYAxisValue: 4000,
-        minYAxisValue: 0,
+        // maxYAxisValue: 4000,
+        // minYAxisValue: 0,
       ),
-      // _getChartData(
-      //   data: [
-      //     // {"time": "2022-09-16 00:41:38", "value": "null"},
-      //     {"time": "2022-09-16 00:51:39", "value": "56"},
-      //     // {"time": "2022-09-16 01:01:38", "value": "null"},
-      //   ],
-      //   color: Colors.orange,
-      //   name: 'Line1',
-      // ),
+      _getChartData(
+        data: [
+          // {"time": "2022-09-16 00:41:38", "value": "null"},
+          {"time": "2022-09-16 00:51:39", "value": "56"},
+          // {"time": "2022-09-16 01:01:38", "value": "null"},
+        ],
+        color: Colors.orange,
+        name: 'Line1',
+      ),
     ];
 
     _lineSeriesCollection1 = [
@@ -278,19 +278,21 @@ class _MyHomePageState extends State<MyHomePage> {
               lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
               title: _lineSeriesCollection1p8GRFOutputs[0].name,
               showLegend: false,
+              showScaleThumbs: true,
             ),
             const SizedBox(
               height: 30.0,
             ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            //   title: _lineSeriesCollection0[0].name,
-            //   showLegend: true,
-            //   showMultipleYAxises: true,
-            // ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollection0,
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollection0,
+              title: _lineSeriesCollection0[0].name,
+              showLegend: true,
+              showMultipleYAxises: true,
+              showScaleThumbs: true,
+            ),
             // const SizedBox(
             //   height: 30.0,
             // ),

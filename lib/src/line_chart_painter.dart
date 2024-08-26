@@ -163,7 +163,7 @@ class LineChartPainter extends CustomPainter {
   }) {
     canvas.drawLine(
       Offset(leftOffset, size.height),
-      Offset(size.width + leftOffset - rightOffset, size.height),
+      Offset(size.width - rightOffset, size.height),
       axisPaint,
     );
   }
@@ -176,7 +176,7 @@ class LineChartPainter extends CustomPainter {
 
     canvas.drawLine(
       Offset(newLeftOffset, size.height),
-      Offset(size.width + newLeftOffset - rightOffset, size.height),
+      Offset(size.width - rightOffset, size.height),
       axisPaint,
     );
   }
@@ -266,7 +266,7 @@ class LineChartPainter extends CustomPainter {
 
       // Draw horizontal grid line
       canvas.drawLine(Offset(leftOffset, scaleY),
-          Offset(size.width - rightOffset + leftOffset, scaleY), _gridPaint);
+          Offset(size.width - rightOffset, scaleY), _gridPaint);
 
       // Draw Y-axis scale points
       String label = (i * yInterval + minValue).toStringAsFixed(0);
@@ -308,10 +308,8 @@ class LineChartPainter extends CustomPainter {
 
         // Draw horizontal grid line
         if (i == lineSeriesXCollection.length - 1) {
-          canvas.drawLine(
-              Offset(newLeftOffset, scaleY),
-              Offset(size.width - rightOffset + newLeftOffset, scaleY),
-              _gridPaint);
+          canvas.drawLine(Offset(newLeftOffset, scaleY),
+              Offset(size.width - rightOffset, scaleY), _gridPaint);
         }
 
         // Draw Y-axis scale points
@@ -343,6 +341,7 @@ class LineChartPainter extends CustomPainter {
     required Canvas canvas,
     required Size size,
     required double xStep,
+    required double leftOffset,
   }) {
     int nonNullValueIndex =
         longestLineSeriesX.dataList.indexWhere((element) => element.y != null);
@@ -353,10 +352,9 @@ class LineChartPainter extends CustomPainter {
       if (showMultipleYAxises) {
         double newLeftOffset = 40 * (lineSeriesXCollection.length - 1);
         adjustedLongPressX = longPressX - newLeftOffset;
-        adjustedLongPressX =
-            adjustedLongPressX.clamp(0.0, size.width - rightOffset);
+        adjustedLongPressX = adjustedLongPressX.clamp(0.0, size.width);
       } else {
-        adjustedLongPressX = longPressX.clamp(0.0, size.width - rightOffset);
+        adjustedLongPressX = longPressX.clamp(0.0, size.width);
       }
 
       int? closestIndex = _findClosestIndex(
@@ -416,7 +414,7 @@ class LineChartPainter extends CustomPainter {
 
         double outOfBoundWidth = (textX - 4) +
             (rectWidth + 16) -
-            (size.width - rightOffset) +
+            (size.width - leftOffset - rightOffset) +
             offset;
         double adjustedTextX = outOfBoundWidth > 0 ? outOfBoundWidth : 0;
         Rect rect1 = Rect.fromLTWH(
@@ -605,28 +603,37 @@ class LineChartPainter extends CustomPainter {
 
     // current (left,top) => (0,0)
     canvas.save();
+    double xStep = 0.0;
+    double leftOffsetForMultipleOffset = 0.0;
 
     if (showMultipleYAxises) {
-      double newLeftOffset =
+      leftOffsetForMultipleOffset =
           leftOffset + 40 * (lineSeriesXCollection.length - 1);
-      canvas.clipRect(Rect.fromPoints(
-          Offset(newLeftOffset, 0),
-          Offset(
-              size.width + newLeftOffset - rightOffset + 1, size.height + 40)));
-      canvas.translate(newLeftOffset + offset, 0);
+      canvas.clipRect(Rect.fromPoints(Offset(leftOffsetForMultipleOffset, 0),
+          Offset(size.width - rightOffset + 1, size.height + 40)));
+      canvas.translate(leftOffsetForMultipleOffset + offset, 0);
+
+      // 如果沒有資料點, xRange = 0
+      if (xRange == 0) {
+        xStep =
+            (size.width * scale - rightOffset - leftOffsetForMultipleOffset) /
+                1;
+      } else {
+        xStep =
+            (size.width * scale - rightOffset - leftOffsetForMultipleOffset) /
+                (xRange - 1);
+      }
     } else {
       canvas.clipRect(Rect.fromPoints(Offset(leftOffset, 0),
-          Offset(size.width + leftOffset - rightOffset + 1, size.height + 40)));
+          Offset(size.width - rightOffset + 1, size.height + 40)));
       canvas.translate(leftOffset + offset, 0);
-    }
 
-    double xStep = 0.0;
-
-    // 如果沒有資料點, xRange = 0
-    if (xRange == 0) {
-      xStep = (size.width * scale - rightOffset) / 1;
-    } else {
-      xStep = (size.width * scale - rightOffset) / (xRange - 1);
+      // 如果沒有資料點, xRange = 0
+      if (xRange == 0) {
+        xStep = (size.width * scale - rightOffset - leftOffset) / 1;
+      } else {
+        xStep = (size.width * scale - rightOffset - leftOffset) / (xRange - 1);
+      }
     }
 
     if (xRange != 0) {
@@ -641,14 +648,12 @@ class LineChartPainter extends CustomPainter {
 
     canvas.save();
     if (showMultipleYAxises) {
-      double newLeftOffset =
-          leftOffset + 40 * (lineSeriesXCollection.length - 1);
-      canvas.clipRect(Rect.fromPoints(Offset(newLeftOffset, 0),
-          Offset(size.width + newLeftOffset - rightOffset + 1, size.height)));
-      canvas.translate(newLeftOffset + offset, 0);
+      canvas.clipRect(Rect.fromPoints(Offset(leftOffsetForMultipleOffset, 0),
+          Offset(size.width - rightOffset + 1, size.height)));
+      canvas.translate(leftOffsetForMultipleOffset + offset, 0);
     } else {
       canvas.clipRect(Rect.fromPoints(Offset(leftOffset, 0),
-          Offset(size.width + leftOffset - rightOffset + 1, size.height)));
+          Offset(size.width - rightOffset + 1, size.height)));
       canvas.translate(leftOffset + offset, 0);
     }
 
@@ -672,6 +677,8 @@ class LineChartPainter extends CustomPainter {
         canvas: canvas,
         size: size,
         xStep: xStep,
+        leftOffset:
+            showMultipleYAxises ? leftOffsetForMultipleOffset : leftOffset,
       );
     }
 
