@@ -661,28 +661,30 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       );
     }
 
-    String maxValueStr = _maxValue.toStringAsFixed(0);
-    String minValueStr = _minValue.toStringAsFixed(0);
-    String maxLengthStr =
-        maxValueStr.length > minValueStr.length ? maxValueStr : minValueStr;
+    if (!widget.showMultipleYAxises) {
+      String maxValueStr = _maxValue.toStringAsFixed(0);
+      String minValueStr = _minValue.toStringAsFixed(0);
+      String maxLengthStr =
+          maxValueStr.length > minValueStr.length ? maxValueStr : minValueStr;
 
-    final TextPainter _textWidthPainter = TextPainter(
-      textAlign: TextAlign.right,
-      textDirection: ui.TextDirection.ltr,
-    );
+      final TextPainter _textWidthPainter = TextPainter(
+        textAlign: TextAlign.right,
+        textDirection: ui.TextDirection.ltr,
+      );
 
-    _textWidthPainter.text = TextSpan(
-      text: maxLengthStr,
-      style: TextStyle(
-        fontSize: 12,
-        color: axisPaint.color,
-      ),
-    );
+      _textWidthPainter.text = TextSpan(
+        text: maxLengthStr,
+        style: TextStyle(
+          fontSize: 12,
+          color: axisPaint.color,
+        ),
+      );
 
-    // Draw label
-    _textWidthPainter.layout();
+      // Draw label
+      _textWidthPainter.layout();
 
-    _leftOffset = _textWidthPainter.width + 10;
+      _leftOffset = _textWidthPainter.width + 10;
+    }
 
     return Column(
       children: [

@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _lineSeriesCollection0 = [
       _getChartData(
         data: [
-          {"time": "2022-09-16 00:51:38", "value": "20"},
+          {"time": "2022-09-16 00:51:38", "value": "300"},
           {"time": "2022-09-16 00:41:39", "value": "30"},
           {"time": "2022-09-16 01:01:38", "value": "22"},
           {"time": "2022-09-16 00:52:28", "value": "20"},
@@ -131,12 +131,12 @@ class _MyHomePageState extends State<MyHomePage> {
           {"time": "2022-09-16 01:03:38", "value": "62"},
           {"time": "2022-09-16 02:51:38", "value": "-100"},
           {"time": "2022-09-16 04:43:39", "value": "40"},
-          {"time": "2022-09-16 07:07:38", "value": "-50"},
+          {"time": "2022-09-16 07:07:38", "value": "-30"},
         ],
         color: Colors.red,
         name: 'Line0',
-        maxYAxisValue: 4000,
-        minYAxisValue: 0,
+        // maxYAxisValue: 4000,
+        // minYAxisValue: 0,
       ),
       // _getChartData(
       //   data: [
@@ -291,43 +291,43 @@ class _MyHomePageState extends State<MyHomePage> {
             // const SizedBox(
             //   height: 30.0,
             // ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
-              title: _lineSeriesCollection1p8GRFOutputs[0].name,
-              showLegend: false,
-              showScaleThumbs: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-
-            _Counter(
-              lineSeriesCollection: [],
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollectionEmpty,
-              title: 'Empty',
-              showLegend: false,
-              showScaleThumbs: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
             // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection0,
+            //   lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
             // ),
             // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            //   title: _lineSeriesCollection0[0].name,
-            //   showLegend: true,
-            //   showMultipleYAxises: true,
+            //   lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
+            //   title: _lineSeriesCollection1p8GRFOutputs[0].name,
+            //   showLegend: false,
+            //   showScaleThumbs: true,
             // ),
             // const SizedBox(
             //   height: 30.0,
             // ),
+
+            // _Counter(
+            //   lineSeriesCollection: [],
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollectionEmpty,
+            //   title: 'Empty',
+            //   showLegend: false,
+            //   showScaleThumbs: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollection0,
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollection0,
+              title: _lineSeriesCollection0[0].name,
+              showLegend: true,
+              showMultipleYAxises: false,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
             // _Counter(
             //   lineSeriesCollection: _lineSeriesCollection1,
             // ),
