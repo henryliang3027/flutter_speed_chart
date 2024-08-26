@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/src/constants.dart';
@@ -32,6 +31,7 @@ class SpeedLineChart extends StatefulWidget {
   final String title;
   final bool showLegend;
   final bool showMultipleYAxises;
+  final bool showScaleThumbs;
 
   const SpeedLineChart({
     Key? key,
@@ -39,6 +39,7 @@ class SpeedLineChart extends StatefulWidget {
     this.title = '',
     this.showLegend = true,
     this.showMultipleYAxises = false,
+    this.showScaleThumbs = false,
   }) : super(key: key);
 
   @override
@@ -419,21 +420,82 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 將範圍限制在圖表寬度內
       double newOffsetX = left.clamp((newScale - 1) * -widgetWidth, 0.0);
 
+      // 根据缩放,同步缩略滑钮的状态
+      // 同步缩略滑钮的状态
+      var maxViewportWidth =
+          widgetWidth - slidingButtonWidth * 2 - _leftOffset - _rightOffset;
+      double lOffsetX = -newOffsetX / _scale;
+      double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
+
+      double r = maxViewportWidth / widgetWidth;
+      lOffsetX *= r;
+      rOffsetX *= r;
+
       setState(() {
         _scale = newScale;
         _offset = newOffsetX;
+        _leftSlidingBtnLeft = lOffsetX;
+        _rightSlidingBtnRight = rOffsetX;
       });
     }
 
+    // 滑鈕中間的空白區域的拖曳操作
+    _onSlidingBarHorizontalDragStart(DragStartDetails details) {
+      _lastSlidingBarPosition = details.globalPosition.dx;
+    }
+
+    _onSlidingBarHorizontalDragUpdate(DragUpdateDetails details) {
+      var widgetWidth = context.size!.width;
+
+      // 得到本次滑动的偏移量, 乘倍数后和之前的偏移量相减等于新的偏移量
+      var deltaX = (details.delta.dx) * 1.3;
+      _lastSlidingBarPosition = details.globalPosition.dx;
+      double left = _offset - deltaX * _scale;
+      print(
+          'details.delta.dx: ${details.delta.dx}, deltaX: ${deltaX}, _offset: $_offset, deltaX: $deltaX, _scale: $_scale');
+
+      // 将x范围限制图表宽度内
+      double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
+
+      // 同步缩略滑钮的状态
+      var maxViewportWidth =
+          widgetWidth - slidingButtonWidth * 2 - _leftOffset - _rightOffset;
+      double lOffsetX = -newOffsetX / _scale;
+      double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
+
+      print('origin_lOffsetX: ${lOffsetX}, origin_rOffsetX: ${rOffsetX}');
+
+      double r = maxViewportWidth / widgetWidth;
+      lOffsetX *= r;
+      rOffsetX *= r;
+
+      print(
+          'maxViewportWidth: ${maxViewportWidth}, widgetWidth: ${widgetWidth}, lOffsetX: ${lOffsetX}, rOffsetX: ${rOffsetX}');
+
+      setState(() {
+        _offset = newOffsetX;
+        _leftSlidingBtnLeft = lOffsetX;
+        _rightSlidingBtnRight = rOffsetX;
+      });
+    }
+
+    _onSlidingBarHorizontalDragEnd(DragEndDetails details) {}
+
     // 左邊按鈕的滑動操作
     _onLBHorizontalDragDown(DragStartDetails details) {
+      // 按鈕的左側的x (起點) = 觸控的x軸座標 - 前一次按鈕的左側到左邊起點的滑動距離
       _lastLeftSlidingBtnLeft = details.globalPosition.dx - _leftSlidingBtnLeft;
+      print('details.globalPosition.dx: ${details.globalPosition.dx}');
+      print('_leftSlidingBtnLeft: ${_leftSlidingBtnLeft}');
     }
 
     _onLBHorizontalDragUpdate(DragUpdateDetails details) {
       var widgetWidth = context.size!.width;
-      var maxViewportWidth = widgetWidth - slidingButtonWidth * 2;
 
+      var maxViewportWidth =
+          widgetWidth - slidingButtonWidth * 2 - _leftOffset - _rightOffset;
+
+      // 按鈕新的offset = 觸控的x軸座標 - 按鈕的左側的x (起點)
       var newLOffsetX = details.globalPosition.dx - _lastLeftSlidingBtnLeft;
 
       // 根据最大缩放倍数, 限制滑动的最大距离.
@@ -462,50 +524,21 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
     _onLBHorizontalDragEnd(DragEndDetails details) {}
 
-    // 滑鈕中間的空白區域的拖曳操作
-    _onSlidingBarHorizontalDragStart(DragStartDetails details) {
-      _lastSlidingBarPosition = details.globalPosition.dx;
-    }
-
-    _onSlidingBarHorizontalDragUpdate(DragUpdateDetails details) {
-      var widgetWidth = context.size!.width;
-
-      // 得到本次滑动的偏移量, 乘倍数后和之前的偏移量相减等于新的偏移量
-      var deltaX = (details.globalPosition.dx - _lastSlidingBarPosition);
-      _lastSlidingBarPosition = details.globalPosition.dx;
-      double left = _offset - deltaX * _scale;
-
-      // 将x范围限制图表宽度内
-      double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
-
-      // 同步缩略滑钮的状态
-      var maxViewportWidth = widgetWidth - slidingButtonWidth * 2;
-      double lOffsetX = -newOffsetX / _scale;
-      double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
-
-      double r = maxViewportWidth / widgetWidth;
-      lOffsetX *= r;
-      rOffsetX *= r;
-
-      setState(() {
-        _offset = newOffsetX;
-        _leftSlidingBtnLeft = lOffsetX;
-        _rightSlidingBtnRight = rOffsetX;
-      });
-    }
-
-    _onSlidingBarHorizontalDragEnd(DragEndDetails details) {}
-
     // 右邊按鈕的滑動操作
     _onRBHorizontalDragDown(DragStartDetails details) {
+      // 按鈕的右側的x (起點) = 觸控的x軸座標 + 前一次按鈕的右側到右邊起點的滑動距離
       _lastRightSlidingBtnRight =
           details.globalPosition.dx + _rightSlidingBtnRight;
+      print('details.globalPosition.dx: ${details.globalPosition.dx}');
+      print('_rightSlidingBtnRight: ${_rightSlidingBtnRight}');
     }
 
     _onRBHorizontalDragUpdate(DragUpdateDetails details) {
       var widgetWidth = context.size!.width;
-      var maxViewportWidth = widgetWidth - slidingButtonWidth * 2;
+      var maxViewportWidth =
+          widgetWidth - slidingButtonWidth * 2 - _leftOffset - _rightOffset;
 
+      // 按鈕新的offset = 按鈕的右側的x (起點) - 觸控的x軸座標
       var newROffsetX = _lastRightSlidingBtnRight - details.globalPosition.dx;
 
       // 根据最大缩放倍数, 限制滑动的最大距离.
@@ -535,66 +568,95 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     _onRBHorizontalDragEnd(DragEndDetails details) {}
 
     Widget _buildThumbController() {
-      return SizedBox(
-        width: double.infinity,
-        height: 48.0,
-        child: Stack(
-          children: <Widget>[
-            // blank space and drag to scrolling the graph
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              margin: EdgeInsets.only(
-                left: slidingButtonWidth + _leftSlidingBtnLeft,
-                right: slidingButtonWidth + _rightSlidingBtnRight,
-              ),
-              child: GestureDetector(
-                onHorizontalDragStart: _onSlidingBarHorizontalDragStart,
-                onHorizontalDragUpdate: _onSlidingBarHorizontalDragUpdate,
-                onHorizontalDragEnd: _onSlidingBarHorizontalDragEnd,
-              ),
-            ),
-            // left sliding button
-            Container(
-              width: slidingButtonWidth + _leftSlidingBtnLeft,
-              height: double.infinity,
-              padding: EdgeInsets.only(left: _leftSlidingBtnLeft),
-              color: const Color(0x2268838B),
-              child: GestureDetector(
-                onHorizontalDragStart: _onLBHorizontalDragDown,
-                onHorizontalDragUpdate: _onLBHorizontalDragUpdate,
-                onHorizontalDragEnd: _onLBHorizontalDragEnd,
+      return Padding(
+        padding: EdgeInsets.only(left: _leftOffset, right: _rightOffset),
+        child: SizedBox(
+          width: double.infinity,
+          height: 48.0,
+          child: Stack(
+            children: <Widget>[
+              // blank space and drag to scrolling the graph
+              Center(
                 child: Container(
-                  height: double.infinity,
-                  width: slidingButtonWidth,
-                  color: kSlidingBtnColor,
-                  child: Icon(Icons.chevron_left),
-                ),
-              ),
-            ),
-            // right sliding button
-            Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-                width: slidingButtonWidth + _rightSlidingBtnRight,
-                padding: EdgeInsets.only(right: _rightSlidingBtnRight),
-                height: double.infinity,
-                color: kSlidingBtnScrimColor,
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onHorizontalDragStart: _onRBHorizontalDragDown,
-                  onHorizontalDragUpdate: _onRBHorizontalDragUpdate,
-                  onHorizontalDragEnd: _onRBHorizontalDragEnd,
-                  child: Container(
-                    height: double.infinity,
-                    width: slidingButtonWidth,
-                    color: kSlidingBtnColor,
-                    child: Icon(Icons.chevron_right),
+                  width: double.infinity,
+                  height: 16,
+                  margin: EdgeInsets.only(
+                    left: slidingButtonWidth / 2 + _leftSlidingBtnLeft,
+                    right: slidingButtonWidth / 2 + _rightSlidingBtnRight,
+                  ),
+                  color: Theme.of(context).colorScheme.primary,
+                  child: GestureDetector(
+                    onHorizontalDragStart: _onSlidingBarHorizontalDragStart,
+                    onHorizontalDragUpdate: _onSlidingBarHorizontalDragUpdate,
+                    onHorizontalDragEnd: _onSlidingBarHorizontalDragEnd,
                   ),
                 ),
               ),
-            ),
-          ],
+
+              // left sliding button
+              Container(
+                width: slidingButtonWidth + _leftSlidingBtnLeft,
+                height: double.infinity,
+                padding: EdgeInsets.only(left: _leftSlidingBtnLeft),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                ),
+                child: GestureDetector(
+                  onHorizontalDragStart: _onLBHorizontalDragDown,
+                  onHorizontalDragUpdate: _onLBHorizontalDragUpdate,
+                  onHorizontalDragEnd: _onLBHorizontalDragEnd,
+                  child: Container(
+                    height: double.infinity,
+                    width: slidingButtonWidth,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white)
+                        // borderRadius: BorderRadius.only(
+                        //     topRight: Radius.circular(40.0),
+                        //     bottomRight: Radius.circular(40.0),
+                        //     topLeft: Radius.circular(40.0),
+                        //     bottomLeft: Radius.circular(40.0)),
+                        ),
+                    child: Icon(
+                      Icons.chevron_left,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              // right sliding button
+              Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  width: slidingButtonWidth + _rightSlidingBtnRight,
+                  padding: EdgeInsets.only(right: _rightSlidingBtnRight),
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                  ),
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onHorizontalDragStart: _onRBHorizontalDragDown,
+                    onHorizontalDragUpdate: _onRBHorizontalDragUpdate,
+                    onHorizontalDragEnd: _onRBHorizontalDragEnd,
+                    child: Container(
+                      height: double.infinity,
+                      width: slidingButtonWidth,
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white)),
+                      child: Icon(
+                        Icons.chevron_right,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -622,71 +684,73 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
     _leftOffset = _textWidthPainter.width + 10;
 
-    return GestureDetector(
-      onScaleStart: (details) {
-        // 紀錄按下去的點
-        _focalPointX = details.focalPoint.dx;
+    return Column(
+      children: [
+        widget.title.isNotEmpty
+            ? Text(
+                widget.title,
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w400,
+                ),
+              )
+            : Container(),
+        widget.showScaleThumbs ? _buildThumbController() : Container(),
+        SizedBox(
+          height: 16,
+        ),
+        GestureDetector(
+          onScaleStart: (details) {
+            // 紀錄按下去的點
+            _focalPointX = details.focalPoint.dx;
 
-        // 紀錄目前的scale
-        _lastScaleValue = _scale;
+            // 紀錄目前的scale
+            _lastScaleValue = _scale;
 
-        // 紀錄按下去的點, 用在計算縮放時焦點的偏移量
-        _lastUpdateFocalPointX = details.focalPoint.dx;
-      },
-      onScaleUpdate: (details) {
-        // newScale >= 1.0, 否則計算 left.clamp((newScale - 1) * -widgetWidth, 0.0) 時範圍會錯誤
-        double newScale = (_lastScaleValue * details.scale) >= 1.0
-            ? (_lastScaleValue * details.scale)
-            : 1.0;
-        double xStep = 0.0;
+            // 紀錄按下去的點, 用在計算縮放時焦點的偏移量
+            _lastUpdateFocalPointX = details.focalPoint.dx;
+          },
+          onScaleUpdate: (details) {
+            // newScale >= 1.0, 否則計算 left.clamp((newScale - 1) * -widgetWidth, 0.0) 時範圍會錯誤
+            double newScale = (_lastScaleValue * details.scale) >= 1.0
+                ? (_lastScaleValue * details.scale)
+                : 1.0;
+            double xStep = 0.0;
 
-        _deltaFocalPointX = (details.focalPoint.dx - _lastUpdateFocalPointX);
-        _lastUpdateFocalPointX = details.focalPoint.dx;
+            _deltaFocalPointX =
+                (details.focalPoint.dx - _lastUpdateFocalPointX);
+            _lastUpdateFocalPointX = details.focalPoint.dx;
 
-        if (_xRange == 0) {
-          xStep = (widgetWidth * newScale - _rightOffset) / 1;
-        } else {
-          xStep = (widgetWidth * newScale - _rightOffset) / (_xRange - 1);
-        }
+            if (_xRange == 0) {
+              xStep = (widgetWidth * newScale - _rightOffset) / 1;
+            } else {
+              xStep = (widgetWidth * newScale - _rightOffset) / (_xRange - 1);
+            }
 
-        if (xStep < widgetWidth - _rightOffset) {
-          updateScaleAndScrolling(newScale, _focalPointX,
-              extraX: _deltaFocalPointX);
-        }
-      },
-      onScaleEnd: (details) {},
-      onLongPressMoveUpdate: (details) {
-        setState(() {
-          _longPressX = details.localPosition.dx - _leftOffset;
-        });
-      },
-      onLongPressEnd: (details) {
-        setState(() {
-          _showTooltip = false;
-        });
-      },
-      onLongPressStart: (details) {
-        setState(() {
-          _showTooltip = true;
-          _longPressX = details.localPosition.dx - _leftOffset;
-        });
-      },
-      child: Column(
-        children: [
-          widget.title.isNotEmpty
-              ? Text(
-                  widget.title,
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w400,
-                  ),
-                )
-              : Container(),
-          _buildThumbController(),
-          SizedBox(
-            height: 16,
-          ),
-          CustomPaint(
+            print('xStep: ${xStep}, newScale: ${newScale}');
+            if (xStep < widgetWidth - _rightOffset) {
+              updateScaleAndScrolling(newScale, _focalPointX,
+                  extraX: _deltaFocalPointX);
+            }
+          },
+          onScaleEnd: (details) {},
+          onLongPressMoveUpdate: (details) {
+            setState(() {
+              _longPressX = details.localPosition.dx - _leftOffset;
+            });
+          },
+          onLongPressEnd: (details) {
+            setState(() {
+              _showTooltip = false;
+            });
+          },
+          onLongPressStart: (details) {
+            setState(() {
+              _showTooltip = true;
+              _longPressX = details.localPosition.dx - _leftOffset;
+            });
+          },
+          child: CustomPaint(
             size: Size(
               widgetWidth,
               widgetHeight,
@@ -718,16 +782,16 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               verticalLinePaint: verticalLinePaint,
             ),
           ),
-          const SizedBox(
-            height: 40.0,
-          ),
-          widget.showLegend
-              ? Legend(
-                  lineSeriesXCollection: _lineSeriesXCollection,
-                )
-              : Container(),
-        ],
-      ),
+        ),
+        const SizedBox(
+          height: 40.0,
+        ),
+        widget.showLegend
+            ? Legend(
+                lineSeriesXCollection: _lineSeriesXCollection,
+              )
+            : Container(),
+      ],
     );
   }
 }

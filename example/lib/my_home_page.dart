@@ -287,7 +287,7 @@ class _MyHomePageState extends State<MyHomePage> {
             //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
             //   showLegend: true,
             //   showMultipleYAxises: true,
-            // ),
+            // ),`
             // const SizedBox(
             //   height: 30.0,
             // ),
@@ -298,6 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
               lineSeriesCollection: _lineSeriesCollection1p8GRFOutputs,
               title: _lineSeriesCollection1p8GRFOutputs[0].name,
               showLegend: false,
+              showScaleThumbs: true,
             ),
             const SizedBox(
               height: 30.0,
@@ -310,6 +311,7 @@ class _MyHomePageState extends State<MyHomePage> {
               lineSeriesCollection: _lineSeriesCollectionEmpty,
               title: 'Empty',
               showLegend: false,
+              showScaleThumbs: true,
             ),
             const SizedBox(
               height: 30.0,

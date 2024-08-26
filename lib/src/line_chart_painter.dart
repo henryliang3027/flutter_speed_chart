@@ -358,6 +358,8 @@ class LineChartPainter extends CustomPainter {
         adjustedLongPressX = longPressX.clamp(0.0, size.width);
       }
 
+      print('adjustedLongPressX: $adjustedLongPressX');
+
       int? closestIndex = _findClosestIndex(
         x: adjustedLongPressX,
         offsetX: offset,
@@ -415,7 +417,7 @@ class LineChartPainter extends CustomPainter {
 
         double outOfBoundWidth = (textX - 4) +
             (rectWidth + 16) -
-            (size.width - rightOffset) +
+            (size.width - leftOffset - rightOffset) +
             offset;
         print('offset: $offset');
         double adjustedTextX = outOfBoundWidth > 0 ? outOfBoundWidth : 0;
