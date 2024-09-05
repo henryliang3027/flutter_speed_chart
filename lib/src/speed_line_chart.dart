@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/src/constants.dart';
@@ -82,6 +83,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   double _rightSlidingBtnRight = 0.0;
   double _lastRightSlidingBtnRight = 0.0;
   double _lastSlidingBarPosition = 0.0;
+
+  Timer? _onPressTimer;
 
   List<LineSeriesX> _getLineSeriesXCollection() {
     List<LineSeriesX> lineSeriesXCollection = [];
@@ -703,6 +706,19 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         ),
         GestureDetector(
           onScaleStart: (details) {
+            print('Scale start');
+            if (details.pointerCount == 1) {
+              _onPressTimer ??= Timer(Duration(milliseconds: 200), () {
+                print('timer ${_deltaFocalPointX}');
+                if (_deltaFocalPointX == 0) {
+                  setState(() {
+                    _showTooltip = true;
+                    _longPressX = details.focalPoint.dx - _leftOffset;
+                  });
+                }
+              });
+            }
+
             // 紀錄按下去的點
             _focalPointX = details.focalPoint.dx;
 
@@ -714,44 +730,63 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
           },
           onScaleUpdate: (details) {
             // newScale >= 1.0, 否則計算 left.clamp((newScale - 1) * -widgetWidth, 0.0) 時範圍會錯誤
-            double newScale = (_lastScaleValue * details.scale) >= 1.0
-                ? (_lastScaleValue * details.scale)
-                : 1.0;
-            double xStep = 0.0;
+            print('Scale update');
 
-            _deltaFocalPointX =
-                (details.focalPoint.dx - _lastUpdateFocalPointX);
-            _lastUpdateFocalPointX = details.focalPoint.dx;
-
-            if (_xRange == 0) {
-              xStep = (widgetWidth * newScale - _rightOffset) / 1;
+            if (_showTooltip) {
+              setState(() {
+                _longPressX = details.focalPoint.dx - _leftOffset;
+              });
             } else {
-              xStep = (widgetWidth * newScale - _rightOffset) / (_xRange - 1);
-            }
+              double newScale = (_lastScaleValue * details.scale) >= 1.0
+                  ? (_lastScaleValue * details.scale)
+                  : 1.0;
+              double xStep = 0.0;
 
-            print('xStep: ${xStep}, newScale: ${newScale}');
-            if (xStep < widgetWidth - _rightOffset) {
-              updateScaleAndScrolling(newScale, _focalPointX,
-                  extraX: _deltaFocalPointX);
+              _deltaFocalPointX =
+                  (details.focalPoint.dx - _lastUpdateFocalPointX);
+              _lastUpdateFocalPointX = details.focalPoint.dx;
+
+              if (_xRange == 0) {
+                xStep = (widgetWidth * newScale - _rightOffset) / 1;
+              } else {
+                xStep = (widgetWidth * newScale - _rightOffset) / (_xRange - 1);
+              }
+
+              print('xStep: ${xStep}, newScale: ${newScale}');
+              if (xStep < widgetWidth - _rightOffset) {
+                updateScaleAndScrolling(newScale, _focalPointX,
+                    extraX: _deltaFocalPointX);
+              }
             }
           },
-          onScaleEnd: (details) {},
-          onLongPressMoveUpdate: (details) {
+          onScaleEnd: (details) {
+            print('Scale end');
             setState(() {
-              _longPressX = details.localPosition.dx - _leftOffset;
-            });
-          },
-          onLongPressEnd: (details) {
-            setState(() {
+              if (_onPressTimer != null) {
+                print('cancel timer');
+                _onPressTimer!.cancel();
+                _onPressTimer = null;
+              }
+
               _showTooltip = false;
             });
           },
-          onLongPressStart: (details) {
-            setState(() {
-              _showTooltip = true;
-              _longPressX = details.localPosition.dx - _leftOffset;
-            });
-          },
+          // onLongPressMoveUpdate: (details) {
+          //   setState(() {
+          //     _longPressX = details.localPosition.dx - _leftOffset;
+          //   });
+          // },
+          // onLongPressEnd: (details) {
+          //   setState(() {
+          //     _showTooltip = false;
+          //   });
+          // },
+          // onLongPressStart: (details) {
+          //   setState(() {
+          //     _showTooltip = true;
+          //     _longPressX = details.localPosition.dx - _leftOffset;
+          //   });
+          // },
           child: CustomPaint(
             size: Size(
               widgetWidth,
