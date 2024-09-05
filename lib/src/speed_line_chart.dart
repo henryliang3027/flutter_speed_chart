@@ -448,7 +448,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       var widgetWidth = context.size!.width;
 
       // 得到本次滑动的偏移量, 乘倍数后和之前的偏移量相减等于新的偏移量
-      var deltaX = (details.delta.dx) * 1.3;
+      var deltaX = (details.delta.dx) * 1.1;
       _lastSlidingBarPosition = details.globalPosition.dx;
       double left = _offset - deltaX * _scale;
       print(

@@ -324,6 +324,7 @@ class _MyHomePageState extends State<MyHomePage> {
               title: _lineSeriesCollection0[0].name,
               showLegend: true,
               showMultipleYAxises: false,
+              showScaleThumbs: true,
             ),
             const SizedBox(
               height: 30.0,
