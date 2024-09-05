@@ -709,6 +709,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
             print('Scale start');
             if (details.pointerCount == 1) {
               _onPressTimer ??= Timer(Duration(milliseconds: 200), () {
+                // 時間到的時候判斷按下是否有移動, 如果沒有則顯示 trackball
                 print('timer ${_deltaFocalPointX}');
                 if (_deltaFocalPointX == 0) {
                   setState(() {
@@ -730,7 +731,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
           },
           onScaleUpdate: (details) {
             // newScale >= 1.0, 否則計算 left.clamp((newScale - 1) * -widgetWidth, 0.0) 時範圍會錯誤
-            print('Scale update');
+            print(
+                'Scale update ${details.focalPoint.dx}, ${_lastUpdateFocalPointX}');
 
             if (_showTooltip) {
               setState(() {
@@ -769,6 +771,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               }
 
               _showTooltip = false;
+
+              _deltaFocalPointX = 0;
             });
           },
           // onLongPressMoveUpdate: (details) {
