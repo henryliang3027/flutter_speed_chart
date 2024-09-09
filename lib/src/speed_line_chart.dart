@@ -48,7 +48,7 @@ class SpeedLineChart extends StatefulWidget {
 }
 
 class _SpeedLineChartState extends State<SpeedLineChart> {
-  bool _showTooltip = false;
+  bool _showTrackball = false;
 
   double _longPressX = 0.0;
   double _leftOffset = 0;
@@ -434,6 +434,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       lOffsetX *= r;
       rOffsetX *= r;
 
+      // 避免在某些scale情形下出現負數
+      lOffsetX = lOffsetX < 0 ? 0 : lOffsetX;
+      rOffsetX = rOffsetX < 0 ? 0 : rOffsetX;
+
       setState(() {
         _scale = newScale;
         _offset = newOffsetX;
@@ -707,16 +711,19 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         GestureDetector(
           onScaleStart: (details) {
             print('Scale start');
-            if (details.pointerCount == 1) {
-              _onPressTimer ??= Timer(Duration(milliseconds: 200), () {
-                // 時間到的時候判斷按下是否有移動, 如果沒有則顯示 trackball
-                print('timer ${_deltaFocalPointX}');
-                if (_deltaFocalPointX == 0) {
-                  setState(() {
-                    _showTooltip = true;
-                    _longPressX = details.focalPoint.dx - _leftOffset;
-                  });
+
+            // 當兩隻手指點擊縮放時取消 trackball
+            if (details.pointerCount == 2) {
+              setState(() {
+                if (_onPressTimer != null) {
+                  print('cancel timer');
+                  _onPressTimer!.cancel();
+                  _onPressTimer = null;
                 }
+
+                _showTrackball = false;
+
+                _deltaFocalPointX = 0;
               });
             }
 
@@ -734,7 +741,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
             print(
                 'Scale update ${details.focalPoint.dx}, ${_lastUpdateFocalPointX}');
 
-            if (_showTooltip) {
+            if (_showTrackball) {
               setState(() {
                 _longPressX = details.focalPoint.dx - _leftOffset;
               });
@@ -770,27 +777,69 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                 _onPressTimer = null;
               }
 
-              _showTooltip = false;
+              _showTrackball = false;
 
               _deltaFocalPointX = 0;
             });
           },
-          // onLongPressMoveUpdate: (details) {
-          //   setState(() {
-          //     _longPressX = details.localPosition.dx - _leftOffset;
-          //   });
-          // },
-          // onLongPressEnd: (details) {
-          //   setState(() {
-          //     _showTooltip = false;
-          //   });
-          // },
-          // onLongPressStart: (details) {
-          //   setState(() {
-          //     _showTooltip = true;
-          //     _longPressX = details.localPosition.dx - _leftOffset;
-          //   });
-          // },
+          onTapDown: (details) {
+            print('onTapDown');
+            _onPressTimer ??= Timer(Duration(milliseconds: 200), () {
+              // 時間到的時候判斷按下是否有移動, 如果沒有則顯示 trackball
+              print('timer ${_deltaFocalPointX}');
+              if (_deltaFocalPointX == 0) {
+                setState(() {
+                  _showTrackball = true;
+                  _longPressX = details.localPosition.dx - _leftOffset;
+                });
+              }
+            });
+          },
+          onTapUp: (details) {
+            // 只有按下和不按,沒有任何移動時會觸發
+            // 不按時 _showTrackball = false
+            print('onTapUp');
+            setState(() {
+              if (_onPressTimer != null) {
+                print('cancel timer');
+                _onPressTimer!.cancel();
+                _onPressTimer = null;
+              }
+
+              _showTrackball = false;
+
+              _deltaFocalPointX = 0;
+            });
+          },
+          onVerticalDragUpdate: (details) {
+            // 按下時往垂直方向移動(或不是水平移動)就會觸發這裡的update 事件而不會觸發 onScaleUpdate, 所以在這裡也更新長按的點
+            print('onVerticalDragUpdate ${details.localPosition.dx}');
+
+            if (_showTrackball) {
+              setState(() {
+                _longPressX = details.localPosition.dx - _leftOffset;
+              });
+            }
+          },
+          onVerticalDragEnd: (details) {
+            print('onVerticalDragEnd');
+            setState(() {
+              if (_onPressTimer != null) {
+                print('cancel timer');
+                _onPressTimer!.cancel();
+                _onPressTimer = null;
+              }
+
+              _showTrackball = false;
+
+              _deltaFocalPointX = 0;
+            });
+          },
+          onVerticalDragCancel: () {
+            // 按下時直接往水平方向移動會觸發
+            // 也會觸發onScaleUpdate
+            print('onVerticalDragCancel');
+          },
           child: CustomPaint(
             size: Size(
               widgetWidth,
@@ -799,7 +848,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
             painter: LineChartPainter(
               lineSeriesXCollection: _lineSeriesXCollection,
               longestLineSeriesX: _longestLineSeriesX,
-              showTooltip: _showTooltip,
+              showTrackball: _showTrackball,
               longPressX: _longPressX,
               leftOffset: _leftOffset,
               rightOffset: widget.showMultipleYAxises

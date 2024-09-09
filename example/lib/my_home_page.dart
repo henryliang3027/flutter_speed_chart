@@ -329,26 +329,26 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(
               height: 30.0,
             ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection1,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection1,
-            //   showLegend: true,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection2,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection2,
-            //   showLegend: true,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollection1,
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollection1,
+              showLegend: true,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollection2,
+            ),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollection2,
+              showLegend: true,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
             // _Counter(
             //   lineSeriesCollection: _lineSeriesCollection3,
             // ),

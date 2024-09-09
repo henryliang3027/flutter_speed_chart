@@ -8,7 +8,7 @@ class LineChartPainter extends CustomPainter {
   LineChartPainter({
     required this.lineSeriesXCollection,
     required this.longestLineSeriesX,
-    required this.showTooltip,
+    required this.showTrackball,
     required this.longPressX,
     required this.leftOffset,
     required this.rightOffset,
@@ -30,7 +30,7 @@ class LineChartPainter extends CustomPainter {
 
   final List<LineSeriesX> lineSeriesXCollection;
   final LineSeriesX longestLineSeriesX;
-  final bool showTooltip;
+  final bool showTrackball;
   final double longPressX;
   final double leftOffset;
   final double rightOffset;
@@ -670,7 +670,7 @@ class LineChartPainter extends CustomPainter {
       );
     }
 
-    if (showTooltip) {
+    if (showTrackball) {
       _drawTrackBall(
         canvas: canvas,
         size: size,
@@ -683,7 +683,7 @@ class LineChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(LineChartPainter oldDelegate) {
-    return oldDelegate.showTooltip != showTooltip ||
+    return oldDelegate.showTrackball != showTrackball ||
         oldDelegate.longPressX != longPressX ||
         oldDelegate.scale != scale ||
         oldDelegate.offset != offset;
