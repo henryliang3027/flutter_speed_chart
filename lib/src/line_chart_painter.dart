@@ -163,7 +163,7 @@ class LineChartPainter extends CustomPainter {
   }) {
     canvas.drawLine(
       Offset(leftOffset, size.height),
-      Offset(size.width - rightOffset, size.height),
+      Offset(size.width - rightOffset, size.height), // size.width 是畫面中最右邊的位置
       axisPaint,
     );
   }
@@ -176,12 +176,13 @@ class LineChartPainter extends CustomPainter {
 
     canvas.drawLine(
       Offset(newLeftOffset, size.height),
-      Offset(size.width + newLeftOffset - rightOffset, size.height),
+      Offset(size.width - rightOffset, size.height),
       axisPaint,
     );
   }
 
-  void _drawXAxisLineAndText({
+  // Draw a vertical grid line and a X-Axis label with a given point
+  void _drawXLabelAndVerticalGridLine({
     required Canvas canvas,
     required Size size,
     required double scaleX,
@@ -204,21 +205,21 @@ class LineChartPainter extends CustomPainter {
       ),
     );
 
-    // Draw label
     _axisLabelPainter.layout();
 
-    // 如果自會超過最左邊的邊界就不畫
+    // 如果字會超過最左邊的邊界就不畫
     if (scaleX - _axisLabelPainter.width > 0) {
+      // Draw vertical grid line
       canvas.drawLine(
           Offset(scaleX, 0), Offset(scaleX, size.height), _gridPaint);
 
+      // Draw label
       _axisLabelPainter.paint(
           canvas, Offset(scaleX - _axisLabelPainter.width, size.height));
     }
-    // Draw vertical grid line
   }
 
-  // Draw vertical grid line and X-Axis scale points
+  // Draw vertical grid lines and X-Axis labels
   void _drawXAxisLabelAndVerticalGridLine({
     required Canvas canvas,
     required Size size,
@@ -228,9 +229,10 @@ class LineChartPainter extends CustomPainter {
     int currentLabelIndex = -1;
 
     for (int i = dataList.length - 1; i > 0; i--) {
+      // 最後一個點優先畫出來
       if (i == dataList.length - 1) {
         currentLabelIndex = i;
-        _drawXAxisLineAndText(
+        _drawXLabelAndVerticalGridLine(
           canvas: canvas,
           size: size,
           scaleX: currentLabelIndex * xStep,
@@ -240,9 +242,10 @@ class LineChartPainter extends CustomPainter {
         double currentPointX = i * xStep;
         double previousPointX = currentLabelIndex * xStep;
 
+        // 在畫面中每間隔 100 個單位畫一條 vertical grid line
         if (previousPointX - currentPointX > 100) {
           currentLabelIndex = i;
-          _drawXAxisLineAndText(
+          _drawXLabelAndVerticalGridLine(
             canvas: canvas,
             size: size,
             scaleX: currentLabelIndex * xStep,
@@ -253,7 +256,7 @@ class LineChartPainter extends CustomPainter {
     }
   }
 
-  // Draw horizontal grid line and Y-axis scale points
+  // Draw horizontal grid lines and Y-axis labels
   void _drawYAxisLabelAndHorizontalGridLine({
     required Canvas canvas,
     required Size size,
@@ -268,7 +271,7 @@ class LineChartPainter extends CustomPainter {
       canvas.drawLine(Offset(leftOffset, scaleY),
           Offset(size.width - rightOffset, scaleY), _gridPaint);
 
-      // Draw Y-axis scale points
+      // Draw Y-axis label
       String label = (i * yInterval + minValue).toStringAsFixed(0);
       _axisLabelPainter.text = TextSpan(
         text: label,
@@ -308,10 +311,8 @@ class LineChartPainter extends CustomPainter {
 
         // Draw horizontal grid line
         if (i == lineSeriesXCollection.length - 1) {
-          canvas.drawLine(
-              Offset(newLeftOffset, scaleY),
-              Offset(size.width - rightOffset + newLeftOffset, scaleY),
-              _gridPaint);
+          canvas.drawLine(Offset(newLeftOffset, scaleY),
+              Offset(size.width - rightOffset, scaleY), _gridPaint);
         }
 
         // Draw Y-axis scale points
@@ -608,28 +609,34 @@ class LineChartPainter extends CustomPainter {
     // current (left,top) => (0,0)
     canvas.save();
 
+    double xStep = 0.0;
+
     if (showMultipleYAxises) {
       double newLeftOffset =
           leftOffset + 40 * (lineSeriesXCollection.length - 1);
-      canvas.clipRect(Rect.fromPoints(
-          Offset(newLeftOffset, 0),
-          Offset(
-              size.width + newLeftOffset - rightOffset + 1, size.height + 40)));
+      canvas.clipRect(Rect.fromPoints(Offset(newLeftOffset, 0),
+          Offset(size.width - rightOffset, size.height + 40)));
       canvas.translate(newLeftOffset + offset, 0);
+
+      // 如果沒有資料點, xRange = 0
+      if (xRange == 0) {
+        xStep = (size.width * scale - newLeftOffset - rightOffset - 0.5) / 1;
+      } else {
+        xStep = (size.width * scale - newLeftOffset - rightOffset - 0.5) /
+            (xRange - 1);
+      }
     } else {
       canvas.clipRect(Rect.fromPoints(Offset(leftOffset, 0),
           Offset(size.width - rightOffset, size.height + 40)));
       canvas.translate(leftOffset + offset, 0);
-    }
 
-    double xStep = 0.0;
-
-    // 如果沒有資料點, xRange = 0
-    if (xRange == 0) {
-      xStep = (size.width * scale - leftOffset - rightOffset - 0.5) / 1;
-    } else {
-      xStep =
-          (size.width * scale - leftOffset - rightOffset - 0.5) / (xRange - 1);
+      // 如果沒有資料點, xRange = 0
+      if (xRange == 0) {
+        xStep = (size.width * scale - leftOffset - rightOffset - 0.5) / 1;
+      } else {
+        xStep = (size.width * scale - leftOffset - rightOffset - 0.5) /
+            (xRange - 1);
+      }
     }
 
     if (xRange != 0) {
@@ -647,7 +654,7 @@ class LineChartPainter extends CustomPainter {
       double newLeftOffset =
           leftOffset + 40 * (lineSeriesXCollection.length - 1);
       canvas.clipRect(Rect.fromPoints(Offset(newLeftOffset, 0),
-          Offset(size.width + newLeftOffset - rightOffset + 1, size.height)));
+          Offset(size.width - rightOffset, size.height)));
       canvas.translate(newLeftOffset + offset, 0);
     } else {
       canvas.clipRect(Rect.fromPoints(Offset(leftOffset, 0),

@@ -1,5 +1,5 @@
 import 'package:example/data_1_1.dart';
-import 'package:example/data_1p8g_1.dart';
+import 'package:example/data_1p8g.dart';
 import 'package:example/data_3.dart';
 import 'package:example/data_3_3.dart';
 import 'package:example/data_3_3_3.dart';
@@ -135,18 +135,24 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
         color: Colors.red,
         name: 'Line0',
-        // maxYAxisValue: 4000,
-        // minYAxisValue: 0,
+        maxYAxisValue: 300,
+        minYAxisValue: -30,
       ),
-      // _getChartData(
-      //   data: [
-      //     // {"time": "2022-09-16 00:41:38", "value": "null"},
-      //     {"time": "2022-09-16 00:51:39", "value": "56"},
-      //     // {"time": "2022-09-16 01:01:38", "value": "null"},
-      //   ],
-      //   color: Colors.orange,
-      //   name: 'Line1',
-      // ),
+      _getChartData(
+        data: [
+          {"time": "2022-09-16 00:51:38", "value": "100"},
+          {"time": "2022-09-16 00:41:39", "value": "23"},
+          {"time": "2022-09-16 01:01:38", "value": "45"},
+          {"time": "2022-09-16 00:52:28", "value": "87"},
+          {"time": "2022-09-16 03:41:39", "value": "67"},
+          {"time": "2022-09-16 01:03:38", "value": "78"},
+          {"time": "2022-09-16 02:51:38", "value": "-99"},
+          {"time": "2022-09-16 04:43:39", "value": "12"},
+          {"time": "2022-09-16 07:07:38", "value": "-24"},
+        ],
+        color: Colors.orange,
+        name: 'Line1',
+      ),
     ];
 
     _lineSeriesCollection1 = [
@@ -243,10 +249,20 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     _lineSeriesCollection1p8G1 = [
-      _getGenericTypeChartData(
-        data: jsonData1p8g_1,
+      _getChartData(
+        data: jsonData_1p8g_temperature,
         color: Colors.red,
-        name: 'RF Level',
+        name: 'Temperature',
+      ),
+      _getChartData(
+        data: jsonData_1p8g_voltage,
+        color: Colors.orange,
+        name: 'Voltage',
+      ),
+      _getChartData(
+        data: jsonData_1p8g_voltageRipple,
+        color: Colors.green,
+        name: 'VoltageRipple',
       ),
     ];
 
@@ -330,25 +346,27 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 30.0,
             ),
             _Counter(
-              lineSeriesCollection: _lineSeriesCollection1,
+              lineSeriesCollection: _lineSeriesCollection1p8G1,
             ),
             SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection1,
+              lineSeriesCollection: _lineSeriesCollection1p8G1,
               showLegend: true,
             ),
             const SizedBox(
               height: 30.0,
             ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection2,
-            ),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection2,
-              showLegend: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
+            // _Counter(
+            //   lineSeriesCollection: _lineSeriesCollection1p8G1,
+            // ),
+            // SpeedLineChart(
+            //   lineSeriesCollection: _lineSeriesCollection1p8G1,
+            //   showLegend: true,
+            //   showMultipleYAxises: true,
+            //   showScaleThumbs: true,
+            // ),
+            // const SizedBox(
+            //   height: 30.0,
+            // ),
             // _Counter(
             //   lineSeriesCollection: _lineSeriesCollection3,
             // ),

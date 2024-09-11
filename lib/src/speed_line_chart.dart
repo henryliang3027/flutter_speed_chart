@@ -575,8 +575,12 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     _onRBHorizontalDragEnd(DragEndDetails details) {}
 
     Widget _buildThumbController() {
+      double leftPadding = widget.showMultipleYAxises
+          ? 40.0 * widget.lineSeriesCollection.length
+          : _leftOffset;
+
       return Padding(
-        padding: EdgeInsets.only(left: _leftOffset, right: _rightOffset),
+        padding: EdgeInsets.only(left: leftPadding, right: _rightOffset),
         child: SizedBox(
           width: double.infinity,
           height: 48.0,
@@ -671,8 +675,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     if (!widget.showMultipleYAxises) {
       String maxValueStr = _maxValue.toStringAsFixed(0);
       String minValueStr = _minValue.toStringAsFixed(0);
+
+      // ex: 300 >= -30, 參考 300 的字串長度來決定 _leftOffset
       String maxLengthStr =
-          maxValueStr.length > minValueStr.length ? maxValueStr : minValueStr;
+          maxValueStr.length >= minValueStr.length ? maxValueStr : minValueStr;
 
       final TextPainter _textWidthPainter = TextPainter(
         textAlign: TextAlign.right,
@@ -691,6 +697,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       _textWidthPainter.layout();
 
       _leftOffset = _textWidthPainter.width + 10;
+    } else {
+      _leftOffset = 40;
     }
 
     return Column(
@@ -706,7 +714,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
             : Container(),
         widget.showScaleThumbs ? _buildThumbController() : Container(),
         SizedBox(
-          height: 16,
+          height: widget.showScaleThumbs ? 16 : 0,
         ),
         GestureDetector(
           onScaleStart: (details) {
@@ -851,11 +859,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               showTrackball: _showTrackball,
               longPressX: _longPressX,
               leftOffset: _leftOffset,
-              rightOffset: widget.showMultipleYAxises
-                  ? _rightOffset +
-                      (widget.lineSeriesCollection.length - 1) *
-                          40 //根據y-axis軸的數量調整右邊的邊界
-                  : _rightOffset,
+              rightOffset: _rightOffset,
               offset: _offset,
               scale: _scale,
               minValue: _minValue,
