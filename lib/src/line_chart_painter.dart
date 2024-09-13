@@ -416,9 +416,17 @@ class LineChartPainter extends CustomPainter {
         double textX = (closestIndex * xStep) + 10;
         double textY = size.height / 2 - (14.0 * (tips.length + 1) + 4) / 2;
 
+        // 折線圖的左邊 offset
+        double lineSeriesLeftOffset = 0.0;
+        if (showMultipleYAxises) {
+          lineSeriesLeftOffset = 40.0 * (lineSeriesXCollection.length);
+        } else {
+          lineSeriesLeftOffset = leftOffset;
+        }
+
         double outOfBoundWidth = (textX - 4) +
             (rectWidth + 16) -
-            (size.width - leftOffset - rightOffset) +
+            (size.width - lineSeriesLeftOffset - rightOffset) +
             offset;
         print('offset: $offset');
         double adjustedTextX = outOfBoundWidth > 0 ? outOfBoundWidth : 0;
