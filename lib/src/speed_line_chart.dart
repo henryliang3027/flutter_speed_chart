@@ -438,6 +438,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       lOffsetX = lOffsetX < 0 ? 0 : lOffsetX;
       rOffsetX = rOffsetX < 0 ? 0 : rOffsetX;
 
+      print('_scale: $_scale');
+
       setState(() {
         _scale = newScale;
         _offset = newOffsetX;
@@ -446,31 +448,40 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       });
     }
 
+    double getThumbControllerLeftOffset() {
+      return widget.showMultipleYAxises
+          ? 40.0 * widget.lineSeriesCollection.length
+          : _leftOffset;
+    }
+
     // 滑鈕中間的空白區域的拖曳操作
     _onSlidingBarHorizontalDragStart(DragStartDetails details) {
-      _lastSlidingBarPosition = details.globalPosition.dx;
+      // _lastSlidingBarPosition = details.globalPosition.dx;
     }
 
     _onSlidingBarHorizontalDragUpdate(DragUpdateDetails details) {
       var widgetWidth = context.size!.width;
+      print('widgetWidth: ${widgetWidth}');
 
       // 得到本次滑动的偏移量, 乘倍数后和之前的偏移量相减等于新的偏移量
+
       var deltaX = (details.delta.dx) * 1.1;
-      _lastSlidingBarPosition = details.globalPosition.dx;
+      // _lastSlidingBarPosition = details.globalPosition.dx;
       double left = _offset - deltaX * _scale;
-      print(
-          'details.delta.dx: ${details.delta.dx}, deltaX: ${deltaX}, _offset: $_offset, deltaX: $deltaX, _scale: $_scale');
 
       // 将x范围限制图表宽度内
       double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
 
       // 同步缩略滑钮的状态
-      var maxViewportWidth =
-          widgetWidth - slidingButtonWidth * 2 - _leftOffset - _rightOffset;
+      var thumbControllerLeftOffset = getThumbControllerLeftOffset();
+      var maxViewportWidth = widgetWidth -
+          slidingButtonWidth * 2 -
+          thumbControllerLeftOffset -
+          _rightOffset;
       double lOffsetX = -newOffsetX / _scale;
       double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
 
-      print('origin_lOffsetX: ${lOffsetX}, origin_rOffsetX: ${rOffsetX}');
+      print('maxViewportWidth: ${maxViewportWidth}');
 
       double r = maxViewportWidth / widgetWidth;
       lOffsetX *= r;
@@ -499,8 +510,11 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     _onLBHorizontalDragUpdate(DragUpdateDetails details) {
       var widgetWidth = context.size!.width;
 
-      var maxViewportWidth =
-          widgetWidth - slidingButtonWidth * 2 - _leftOffset - _rightOffset;
+      var thumbControllerLeftOffset = getThumbControllerLeftOffset();
+      var maxViewportWidth = widgetWidth -
+          slidingButtonWidth * 2 -
+          thumbControllerLeftOffset -
+          _rightOffset;
 
       // 按鈕新的offset = 觸控的x軸座標 - 按鈕的左側的x (起點)
       var newLOffsetX = details.globalPosition.dx - _lastLeftSlidingBtnLeft;
@@ -508,7 +522,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 根据最大缩放倍数, 限制滑动的最大距离.
       // Viewport: 窗口指的是两个滑块(不含滑块自身)中间的内容, 即左滑钮的右边到右滑钮的左边的距离.
       // 最大窗口宽 / 最大倍数 = 最小的窗口宽.
-      double minViewportWidth = maxViewportWidth / _maxScale;
+      double minViewportWidth = 1;
       // 最大窗口宽 - 最小窗口宽 - 当前右边的偏移量 = 当前左边的最大偏移量
       double maxLeft =
           maxViewportWidth - minViewportWidth - _rightSlidingBtnRight;
@@ -517,6 +531,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 得到当前的窗口大小
       double viewportWidth =
           maxViewportWidth - newLOffsetX - _rightSlidingBtnRight;
+
+      print(
+          'maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
+
       // 最大窗口大小 / 当前窗口大小 = 应该缩放的倍数
       double newScale = maxViewportWidth / viewportWidth;
       // 计算缩放后的左偏移量
@@ -542,8 +560,12 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
     _onRBHorizontalDragUpdate(DragUpdateDetails details) {
       var widgetWidth = context.size!.width;
-      var maxViewportWidth =
-          widgetWidth - slidingButtonWidth * 2 - _leftOffset - _rightOffset;
+
+      var thumbControllerLeftOffset = getThumbControllerLeftOffset();
+      var maxViewportWidth = widgetWidth -
+          slidingButtonWidth * 2 -
+          thumbControllerLeftOffset -
+          _rightOffset;
 
       // 按鈕新的offset = 按鈕的右側的x (起點) - 觸控的x軸座標
       var newROffsetX = _lastRightSlidingBtnRight - details.globalPosition.dx;
@@ -551,7 +573,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 根据最大缩放倍数, 限制滑动的最大距离.
       // Viewport: 窗口指的是两个滑块(不含滑块自身)中间的内容, 即左滑钮的右边到右滑钮的左边的距离.
       // 最大窗口宽 / 最大倍数 = 最小的窗口宽.
-      double minViewportWidth = maxViewportWidth / _maxScale;
+      double minViewportWidth = 1;
+
       // 最大窗口宽 - 最小窗口宽 - 当前右边的偏移量 = 当前左边的最大偏移量
       double maxLeft =
           maxViewportWidth - minViewportWidth - _leftSlidingBtnLeft;
@@ -560,8 +583,14 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 得到当前的窗口大小
       double viewportWidth =
           maxViewportWidth - _leftSlidingBtnLeft - newROffsetX;
+
+      print(
+          'maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
+
       // 最大窗口大小 / 当前窗口大小 = 应该缩放的倍数
       double newScale = maxViewportWidth / viewportWidth;
+
+      print('newScale: $newScale');
       // 计算缩放后的左偏移量
       double newOffsetX = calculateOffsetX(newScale, 0.0);
 
@@ -575,12 +604,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     _onRBHorizontalDragEnd(DragEndDetails details) {}
 
     Widget _buildThumbController() {
-      double leftPadding = widget.showMultipleYAxises
-          ? 40.0 * widget.lineSeriesCollection.length
-          : _leftOffset;
-
       return Padding(
-        padding: EdgeInsets.only(left: leftPadding, right: _rightOffset),
+        padding: EdgeInsets.only(
+            left: getThumbControllerLeftOffset(), right: _rightOffset),
         child: SizedBox(
           width: double.infinity,
           height: 48.0,
@@ -763,14 +789,26 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   (details.focalPoint.dx - _lastUpdateFocalPointX);
               _lastUpdateFocalPointX = details.focalPoint.dx;
 
+              double thumbControllerLeftOffseet =
+                  getThumbControllerLeftOffset();
+
               if (_xRange == 0) {
-                xStep = (widgetWidth * newScale - _rightOffset) / 1;
+                xStep = (widgetWidth * newScale -
+                        thumbControllerLeftOffseet -
+                        _rightOffset) /
+                    1;
               } else {
-                xStep = (widgetWidth * newScale - _rightOffset) / (_xRange - 1);
+                xStep = (widgetWidth * newScale -
+                        thumbControllerLeftOffseet -
+                        _rightOffset) /
+                    (_xRange - 1);
               }
 
               print('xStep: ${xStep}, newScale: ${newScale}');
-              if (xStep < widgetWidth - _rightOffset) {
+              // 最大 scale 為畫面上至少要有一個點
+              // xStep 要小於整個 chart 的寬度
+              if (xStep <
+                  widgetWidth - thumbControllerLeftOffseet - _rightOffset) {
                 updateScaleAndScrolling(newScale, _focalPointX,
                     extraX: _deltaFocalPointX);
               }

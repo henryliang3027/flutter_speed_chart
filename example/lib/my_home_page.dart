@@ -5,6 +5,7 @@ import 'package:example/data_3_3.dart';
 import 'package:example/data_3_3_3.dart';
 import 'package:example/data_3_3_3_3.dart';
 import 'package:example/data_dsim_1.dart';
+import 'package:example/full_screen_chart.dart';
 import 'package:example/rf_data_1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/speed_chart.dart';
@@ -275,6 +276,32 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
   }
 
+  Widget fullScreen({required List<LineSeries> lineSeriesCollection}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10.0),
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            FullScreenChartForm.route(
+              title: 'Monitoring Chart',
+              lineSeriesCollection: lineSeriesCollection,
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.all(0.0),
+          visualDensity: const VisualDensity(horizontal: -4.0, vertical: -3.0),
+        ),
+        child: const Icon(
+          Icons.fullscreen_outlined,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -335,6 +362,7 @@ class _MyHomePageState extends State<MyHomePage> {
             _Counter(
               lineSeriesCollection: _lineSeriesCollection0,
             ),
+            fullScreen(lineSeriesCollection: _lineSeriesCollection0),
             SpeedLineChart(
               lineSeriesCollection: _lineSeriesCollection0,
               title: _lineSeriesCollection0[0].name,
@@ -348,6 +376,7 @@ class _MyHomePageState extends State<MyHomePage> {
             _Counter(
               lineSeriesCollection: _lineSeriesCollection1p8G1,
             ),
+            fullScreen(lineSeriesCollection: _lineSeriesCollection1p8G1),
             SpeedLineChart(
               lineSeriesCollection: _lineSeriesCollection1p8G1,
               showLegend: true,
