@@ -16,8 +16,6 @@ class LineChartPainter extends CustomPainter {
     required this.scale,
     required this.minValue,
     required this.maxValue,
-    // required this.minDate,
-    // required this.maxDate,
     required this.xRange,
     required this.yRange,
     required this.showMultipleYAxises,
@@ -38,8 +36,6 @@ class LineChartPainter extends CustomPainter {
   final double scale;
   final double minValue;
   final double maxValue;
-  // final DateTime? minDate;
-  // final DateTime? maxDate;
   final double xRange;
   final double yRange;
   final bool showMultipleYAxises;
@@ -78,24 +74,9 @@ class LineChartPainter extends CustomPainter {
     int? closestIndex;
 
     if (longestLineSeriesX.dataList.isNotEmpty) {
-      // for (DateTime dateTime in longestLineSeriesX.dataMap.keys) {
-      //   // because sthe start point of line series is in canvas.translate(leftOffset + offset, 0);
-      //   // add offsetX to adjust the difference between target datetime and min datetime
-      //   double distance =
-      //       (dateTime.difference(minDate!).inSeconds.toDouble() * xStep +
-      //               offsetX -
-      //               x)
-      //           .abs();
-
-      //   if (distance < closestDistance) {
-      //     closestDistance = distance;
-      //     closestDateTime = dateTime;
-      //   }
-      // }
-
       for (int i = 0; i < longestLineSeriesX.dataList.length; i++) {
-        // because sthe start point of line series is in canvas.translate(leftOffset + offset, 0);
-        // add offsetX to adjust the difference between target datetime and min datetime
+        // because sthe start point of line series is in canvas.translate(offset, 0)
+        // add offsetX to adjust the i-th point
         double distance = (i * xStep + offsetX - x).abs();
 
         if (distance < closestDistance) {
@@ -108,18 +89,6 @@ class LineChartPainter extends CustomPainter {
     } else {
       return null;
     }
-  }
-
-  List<Map<int, double?>> _getYByX(dynamic x) {
-    List<Map<int, double?>> valueMapList = [];
-    for (int i = 0; i < lineSeriesXCollection.length; i++) {
-      LineSeriesX lineSeriesX = lineSeriesXCollection[i];
-      Map<int, double?> valueMap = {};
-      valueMap[i] = lineSeriesX.dataMap[x];
-      valueMapList.add(valueMap);
-    }
-    // valueMapList = [{'name': value},{'name': value}]
-    return valueMapList;
   }
 
   List<Map<int, double?>> _getYByClosetIndex(int index) {

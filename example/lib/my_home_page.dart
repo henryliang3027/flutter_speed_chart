@@ -380,6 +380,7 @@ class _MyHomePageState extends State<MyHomePage> {
             SpeedLineChart(
               lineSeriesCollection: _lineSeriesCollection1p8G1,
               showLegend: true,
+              showScaleThumbs: true,
             ),
             const SizedBox(
               height: 30.0,

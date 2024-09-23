@@ -60,8 +60,6 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
   double _minValue = 0.0;
   double _maxValue = 0.0;
-  // DateTime? _minDate;
-  // DateTime? _maxDate;
   double _xRange = 0.0;
   double _yRange = 0.0;
 
@@ -84,6 +82,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   double _lastSlidingBarPosition = 0.0;
 
   Timer? _onPressTimer;
+
+  Size? _currentSize;
+  Size? _previousSize;
 
   List<LineSeriesX> _getLineSeriesXCollection() {
     List<LineSeriesX> lineSeriesXCollection = [];
@@ -311,42 +312,12 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     }
   }
 
-  // void setMinDateAndMaxDate() {
-  //   List<DateTime> allDateTimes = _lineSeriesXCollection
-  //       .expand((lineSeries) => lineSeries.dataMap.keys)
-  //       .toList();
-
-  //   if (allDateTimes.isNotEmpty) {
-  //     _minDate = allDateTimes.map((dateTime) => dateTime).reduce(
-  //         (value, element) => value.isBefore(element) ? value : element);
-  //     _maxDate = allDateTimes
-  //         .map((dateTime) => dateTime)
-  //         .reduce((value, element) => value.isAfter(element) ? value : element);
-  //   } else {
-  //     _minDate = null;
-  //     _maxDate = null;
-  //   }
-  // }
-
   void setXRangeAndYRange() {
-    // if (_minDate != null && _maxDate != null) {
-    //   _xRange = _maxDate!.difference(_minDate!).inSeconds.toDouble();
-    // } else {
-    //   _xRange = 0.0;
-    // }
-
     _xRange = _longestLineSeriesX.dataList.length * 1.0;
-
     _yRange = _maxValue - _minValue;
   }
 
   void setXRangeAndYRangeForMultipleYAxis() {
-    // if (_minDate != null && _maxDate != null) {
-    //   _xRange = _maxDate!.difference(_minDate!).inSeconds.toDouble();
-    // } else {
-    //   _xRange = 0.0;
-    // }
-
     _xRange = _longestLineSeriesX.dataList.length * 1.0;
 
     for (int i = 0; i < _lineSeriesXCollection.length; i++) {
@@ -367,11 +338,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
     if (widget.showMultipleYAxises) {
       setMinValueAndMaxValueForMultipleYAxis();
-      // setMinDateAndMaxDate();
       setXRangeAndYRangeForMultipleYAxis();
     } else {
       setMinValueAndMaxValue();
-      // setMinDateAndMaxDate();
       setXRangeAndYRange();
     }
   }
@@ -514,6 +483,43 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         _leftSlidingBtnLeft = lOffsetX;
         _rightSlidingBtnRight = rOffsetX;
       });
+    }
+
+    _onWindowResize(BoxConstraints constraints) {
+      _currentSize = Size(constraints.maxWidth, constraints.maxHeight);
+      double widgetWidth = _currentSize!.width;
+      double widthDiff = 0.0;
+
+      if (_previousSize != null) {
+        widthDiff = _currentSize!.width / _previousSize!.width;
+      }
+
+      double left = _offset * widthDiff;
+      print("left: $left, widthDiff: $widthDiff");
+
+      _previousSize = _currentSize;
+
+      // 将x范围限制图表宽度内
+      double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
+
+      // 同步缩略滑钮的状态
+      double thumbControllerLeftOffset = getLineSeriesLeftOffset();
+      double maxViewportWidth = widgetWidth -
+          slidingButtonWidth * 2 -
+          thumbControllerLeftOffset -
+          _rightOffset;
+      double lOffsetX = -newOffsetX / _scale;
+      double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
+
+      double r = maxViewportWidth / widgetWidth;
+      lOffsetX *= r;
+      rOffsetX *= r;
+
+      // setState(() {
+      _offset = newOffsetX;
+      _leftSlidingBtnLeft = lOffsetX;
+      _rightSlidingBtnRight = rOffsetX;
+      // });
     }
 
     _onSlidingBarHorizontalDragEnd(DragEndDetails details) {}
@@ -743,202 +749,207 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       _leftOffset = 40;
     }
 
-    return Column(
-      children: [
-        widget.title.isNotEmpty
-            ? Text(
-                widget.title,
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w400,
-                ),
-              )
-            : Container(),
-        widget.showScaleThumbs ? _buildThumbController() : Container(),
-        SizedBox(
-          height: widget.showScaleThumbs ? 16 : 0,
-        ),
-        GestureDetector(
-          onScaleStart: (details) {
-            print('Scale start');
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        _onWindowResize(constraints);
 
-            // 當兩隻手指點擊縮放時取消 trackball
-            if (details.pointerCount == 2) {
-              setState(() {
-                if (_onPressTimer != null) {
-                  print('cancel timer');
-                  _onPressTimer!.cancel();
-                  _onPressTimer = null;
+        return Column(
+          children: [
+            widget.title.isNotEmpty
+                ? Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  )
+                : Container(),
+            widget.showScaleThumbs ? _buildThumbController() : Container(),
+            SizedBox(
+              height: widget.showScaleThumbs ? 16 : 0,
+            ),
+            GestureDetector(
+              onScaleStart: (details) {
+                print('Scale start');
+
+                // 當兩隻手指點擊縮放時取消 trackball
+                if (details.pointerCount == 2) {
+                  setState(() {
+                    if (_onPressTimer != null) {
+                      print('cancel timer');
+                      _onPressTimer!.cancel();
+                      _onPressTimer = null;
+                    }
+
+                    _showTrackball = false;
+
+                    _deltaFocalPointX = 0;
+                  });
                 }
 
-                _showTrackball = false;
+                // 紀錄按下去的點
+                _focalPointX = details.focalPoint.dx;
 
-                _deltaFocalPointX = 0;
-              });
-            }
+                // 紀錄目前的scale
+                _lastScaleValue = _scale;
 
-            // 紀錄按下去的點
-            _focalPointX = details.focalPoint.dx;
+                // 紀錄按下去的點, 用在計算縮放時焦點的偏移量
+                _lastUpdateFocalPointX = details.focalPoint.dx;
+              },
+              onScaleUpdate: (details) {
+                // newScale >= 1.0, 否則計算 left.clamp((newScale - 1) * -widgetWidth, 0.0) 時範圍會錯誤
+                print(
+                    'Scale update ${details.focalPoint.dx}, ${_lastUpdateFocalPointX}');
 
-            // 紀錄目前的scale
-            _lastScaleValue = _scale;
+                if (_showTrackball) {
+                  setState(() {
+                    _longPressX = details.focalPoint.dx - _leftOffset;
+                  });
+                } else {
+                  double newScale = (_lastScaleValue * details.scale) >= 1.0
+                      ? (_lastScaleValue * details.scale)
+                      : 1.0;
+                  double xStep = 0.0;
 
-            // 紀錄按下去的點, 用在計算縮放時焦點的偏移量
-            _lastUpdateFocalPointX = details.focalPoint.dx;
-          },
-          onScaleUpdate: (details) {
-            // newScale >= 1.0, 否則計算 left.clamp((newScale - 1) * -widgetWidth, 0.0) 時範圍會錯誤
-            print(
-                'Scale update ${details.focalPoint.dx}, ${_lastUpdateFocalPointX}');
+                  _deltaFocalPointX =
+                      (details.focalPoint.dx - _lastUpdateFocalPointX);
+                  _lastUpdateFocalPointX = details.focalPoint.dx;
 
-            if (_showTrackball) {
-              setState(() {
-                _longPressX = details.focalPoint.dx - _leftOffset;
-              });
-            } else {
-              double newScale = (_lastScaleValue * details.scale) >= 1.0
-                  ? (_lastScaleValue * details.scale)
-                  : 1.0;
-              double xStep = 0.0;
+                  // 跟 line series 的 left offset 一樣, 所以兩者是對齊的
+                  double lineSeriesLeftOffseet = getLineSeriesLeftOffset();
 
-              _deltaFocalPointX =
-                  (details.focalPoint.dx - _lastUpdateFocalPointX);
-              _lastUpdateFocalPointX = details.focalPoint.dx;
+                  if (_xRange == 0) {
+                    xStep = (widgetWidth * newScale -
+                            lineSeriesLeftOffseet -
+                            _rightOffset) /
+                        1;
+                  } else {
+                    xStep = (widgetWidth * newScale -
+                            lineSeriesLeftOffseet -
+                            _rightOffset) /
+                        (_xRange - 1);
+                  }
 
-              // 跟 line series 的 left offset 一樣, 所以兩者是對齊的
-              double lineSeriesLeftOffseet = getLineSeriesLeftOffset();
-
-              if (_xRange == 0) {
-                xStep = (widgetWidth * newScale -
-                        lineSeriesLeftOffseet -
-                        _rightOffset) /
-                    1;
-              } else {
-                xStep = (widgetWidth * newScale -
-                        lineSeriesLeftOffseet -
-                        _rightOffset) /
-                    (_xRange - 1);
-              }
-
-              print('xStep: ${xStep}, newScale: ${newScale}');
-              // 最大 scale 為畫面上至少要有一個點
-              // xStep 要小於整個 chart 的寬度
-              if (xStep < widgetWidth - lineSeriesLeftOffseet - _rightOffset) {
-                updateScaleAndScrolling(newScale, _focalPointX,
-                    extraX: _deltaFocalPointX);
-              }
-            }
-          },
-          onScaleEnd: (details) {
-            print('Scale end');
-            setState(() {
-              if (_onPressTimer != null) {
-                print('cancel timer');
-                _onPressTimer!.cancel();
-                _onPressTimer = null;
-              }
-
-              _showTrackball = false;
-
-              _deltaFocalPointX = 0;
-            });
-          },
-          onTapDown: (details) {
-            print('onTapDown');
-            _onPressTimer ??= Timer(Duration(milliseconds: 200), () {
-              // 時間到的時候判斷按下是否有移動, 如果沒有則顯示 trackball
-              print('timer ${_deltaFocalPointX}');
-              if (_deltaFocalPointX == 0) {
+                  print('xStep: ${xStep}, newScale: ${newScale}');
+                  // 最大 scale 為畫面上至少要有一個點
+                  // xStep 要小於整個 chart 的寬度
+                  if (xStep <
+                      widgetWidth - lineSeriesLeftOffseet - _rightOffset) {
+                    updateScaleAndScrolling(newScale, _focalPointX,
+                        extraX: _deltaFocalPointX);
+                  }
+                }
+              },
+              onScaleEnd: (details) {
+                print('Scale end');
                 setState(() {
-                  _showTrackball = true;
-                  _longPressX = details.localPosition.dx - _leftOffset;
+                  if (_onPressTimer != null) {
+                    print('cancel timer');
+                    _onPressTimer!.cancel();
+                    _onPressTimer = null;
+                  }
+
+                  _showTrackball = false;
+
+                  _deltaFocalPointX = 0;
                 });
-              }
-            });
-          },
-          onTapUp: (details) {
-            // 只有按下和不按,沒有任何移動時會觸發
-            // 不按時 _showTrackball = false
-            print('onTapUp');
-            setState(() {
-              if (_onPressTimer != null) {
-                print('cancel timer');
-                _onPressTimer!.cancel();
-                _onPressTimer = null;
-              }
+              },
+              onTapDown: (details) {
+                print('onTapDown');
+                _onPressTimer ??= Timer(Duration(milliseconds: 200), () {
+                  // 時間到的時候判斷按下是否有移動, 如果沒有則顯示 trackball
+                  print('timer ${_deltaFocalPointX}');
+                  if (_deltaFocalPointX == 0) {
+                    setState(() {
+                      _showTrackball = true;
+                      _longPressX = details.localPosition.dx - _leftOffset;
+                    });
+                  }
+                });
+              },
+              onTapUp: (details) {
+                // 只有按下和不按,沒有任何移動時會觸發
+                // 不按時 _showTrackball = false
+                print('onTapUp');
+                setState(() {
+                  if (_onPressTimer != null) {
+                    print('cancel timer');
+                    _onPressTimer!.cancel();
+                    _onPressTimer = null;
+                  }
 
-              _showTrackball = false;
+                  _showTrackball = false;
 
-              _deltaFocalPointX = 0;
-            });
-          },
-          onVerticalDragUpdate: (details) {
-            // 按下時往垂直方向移動(或不是水平移動)就會觸發這裡的update 事件而不會觸發 onScaleUpdate, 所以在這裡也更新長按的點
-            print('onVerticalDragUpdate ${details.localPosition.dx}');
+                  _deltaFocalPointX = 0;
+                });
+              },
+              onVerticalDragUpdate: (details) {
+                // 按下時往垂直方向移動(或不是水平移動)就會觸發這裡的update 事件而不會觸發 onScaleUpdate, 所以在這裡也更新長按的點
+                print('onVerticalDragUpdate ${details.localPosition.dx}');
 
-            if (_showTrackball) {
-              setState(() {
-                _longPressX = details.localPosition.dx - _leftOffset;
-              });
-            }
-          },
-          onVerticalDragEnd: (details) {
-            print('onVerticalDragEnd');
-            setState(() {
-              if (_onPressTimer != null) {
-                print('cancel timer');
-                _onPressTimer!.cancel();
-                _onPressTimer = null;
-              }
+                if (_showTrackball) {
+                  setState(() {
+                    _longPressX = details.localPosition.dx - _leftOffset;
+                  });
+                }
+              },
+              onVerticalDragEnd: (details) {
+                print('onVerticalDragEnd');
+                setState(() {
+                  if (_onPressTimer != null) {
+                    print('cancel timer');
+                    _onPressTimer!.cancel();
+                    _onPressTimer = null;
+                  }
 
-              _showTrackball = false;
+                  _showTrackball = false;
 
-              _deltaFocalPointX = 0;
-            });
-          },
-          onVerticalDragCancel: () {
-            // 按下時直接往水平方向移動會觸發
-            // 也會觸發onScaleUpdate
-            print('onVerticalDragCancel');
-          },
-          child: CustomPaint(
-            size: Size(
-              widgetWidth,
-              widgetHeight,
+                  _deltaFocalPointX = 0;
+                });
+              },
+              onVerticalDragCancel: () {
+                // 按下時直接往水平方向移動會觸發
+                // 也會觸發onScaleUpdate
+                print('onVerticalDragCancel');
+              },
+              child: CustomPaint(
+                size: Size(
+                  widgetWidth,
+                  widgetHeight,
+                ),
+                painter: LineChartPainter(
+                  lineSeriesXCollection: _lineSeriesXCollection,
+                  longestLineSeriesX: _longestLineSeriesX,
+                  showTrackball: _showTrackball,
+                  longPressX: _longPressX,
+                  leftOffset: _leftOffset,
+                  rightOffset: _rightOffset,
+                  offset: _offset,
+                  scale: _scale,
+                  minValue: _minValue,
+                  maxValue: _maxValue,
+                  xRange: _xRange,
+                  yRange: _yRange,
+                  showMultipleYAxises: widget.showMultipleYAxises,
+                  minValues: _minValues,
+                  maxValues: _maxValues,
+                  yRanges: _yRanges,
+                  axisPaint: axisPaint,
+                  verticalLinePaint: verticalLinePaint,
+                ),
+              ),
             ),
-            painter: LineChartPainter(
-              lineSeriesXCollection: _lineSeriesXCollection,
-              longestLineSeriesX: _longestLineSeriesX,
-              showTrackball: _showTrackball,
-              longPressX: _longPressX,
-              leftOffset: _leftOffset,
-              rightOffset: _rightOffset,
-              offset: _offset,
-              scale: _scale,
-              minValue: _minValue,
-              maxValue: _maxValue,
-              // minDate: _minDate,
-              // maxDate: _maxDate,
-              xRange: _xRange,
-              yRange: _yRange,
-              showMultipleYAxises: widget.showMultipleYAxises,
-              minValues: _minValues,
-              maxValues: _maxValues,
-              yRanges: _yRanges,
-              axisPaint: axisPaint,
-              verticalLinePaint: verticalLinePaint,
+            const SizedBox(
+              height: 40.0,
             ),
-          ),
-        ),
-        const SizedBox(
-          height: 40.0,
-        ),
-        widget.showLegend
-            ? Legend(
-                lineSeriesXCollection: _lineSeriesXCollection,
-              )
-            : Container(),
-      ],
+            widget.showLegend
+                ? Legend(
+                    lineSeriesXCollection: _lineSeriesXCollection,
+                  )
+                : Container(),
+          ],
+        );
+      },
     );
   }
 }
