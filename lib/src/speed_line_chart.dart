@@ -451,22 +451,13 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       });
     }
 
-    // 滑鈕中間的空白區域的拖曳操作
+    // 滑鈕中間的區域的拖曳操作
     _onSlidingBarHorizontalDragStart(DragStartDetails details) {
-      // _lastSlidingBarPosition = details.globalPosition.dx;
+      _lastSlidingBarPosition = details.globalPosition.dx;
     }
 
     _onSlidingBarHorizontalDragUpdate(DragUpdateDetails details) {
       double widgetWidth = context.size!.width;
-      print('widgetWidth: ${widgetWidth}');
-
-      // 得到本次滑動的偏移量, 乘倍數後和之前的偏移量相減等於新的偏移量
-      double deltaX = (details.delta.dx) * 1.1;
-      // _lastSlidingBarPosition = details.globalPosition.dx;
-      double left = _offset - deltaX * _scale;
-
-      // 將x範圍限制圖表寬度內
-      double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
 
       // 同步縮放滑鈕的狀態
       double thumbControllerLeftOffset = getLineSeriesLeftOffset();
@@ -474,61 +465,36 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
           slidingButtonWidth * 2 -
           thumbControllerLeftOffset -
           _rightOffset;
+      double r = maxViewportWidth / widgetWidth;
+
+      // 滑動的 offset 是對於目前 maxViewportWidth 的偏移量, 所以要乘上比例, 得到在 widgetWidth 上的偏移量
+      // 讓滑鈕的移動跟游標同步
+      double deltaX = (details.delta.dx) * (widgetWidth / maxViewportWidth);
+
+      _lastSlidingBarPosition = details.globalPosition.dx;
+
+      // 本次滑動的偏移量乘上 scale 倍數後和之前的偏移量相減等於新的偏移量
+      double left = _offset - deltaX * _scale;
+
+      // 將x範圍限制圖表寬度內
+      double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
+
       double lOffsetX = -newOffsetX / _scale;
       double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
 
-      print('maxViewportWidth: ${maxViewportWidth}');
+      print(
+          'lOffsetX: ${lOffsetX} rOffsetX: $_scale, $widgetWidth, $newOffsetX, $rOffsetX');
 
-      double r = maxViewportWidth / widgetWidth;
       lOffsetX *= r;
       rOffsetX *= r;
 
-      print(
-          'maxViewportWidth: ${maxViewportWidth}, widgetWidth: ${widgetWidth}, lOffsetX: ${lOffsetX}, rOffsetX: ${rOffsetX}');
+      print('deltaX: ${details.delta.dx}, widgetWidth: $widgetWidth, r: $r');
 
       setState(() {
         _offset = newOffsetX;
         _leftSlidingBtnLeft = lOffsetX;
         _rightSlidingBtnRight = rOffsetX;
       });
-    }
-
-    _onWindowResize(BoxConstraints constraints) {
-      _currentSize = Size(constraints.maxWidth, constraints.maxHeight);
-      double widgetWidth = _currentSize!.width;
-      double widthDiff = 0.0;
-
-      if (_previousSize != null) {
-        widthDiff = _currentSize!.width / _previousSize!.width;
-      }
-
-      double left = _offset * widthDiff;
-      print("left: $left, widthDiff: $widthDiff");
-
-      _previousSize = _currentSize;
-
-      // 將x範圍限制圖表寬度內
-      double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
-
-      // 同步縮放滑鈕的狀態
-      double thumbControllerLeftOffset = getLineSeriesLeftOffset();
-      double maxViewportWidth = widgetWidth -
-          slidingButtonWidth * 2 -
-          thumbControllerLeftOffset -
-          _rightOffset;
-      double lOffsetX = -newOffsetX / _scale;
-      double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
-
-      double r = maxViewportWidth / widgetWidth;
-      lOffsetX *= r;
-      rOffsetX *= r;
-
-      // 因為使用 LayoutBuilder 所以不需要調用 setState
-      // setState(() {
-      _offset = newOffsetX;
-      _leftSlidingBtnLeft = lOffsetX;
-      _rightSlidingBtnRight = rOffsetX;
-      // });
     }
 
     _onSlidingBarHorizontalDragEnd(DragEndDetails details) {}
@@ -728,6 +694,44 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
           ),
         ),
       );
+    }
+
+    _onWindowResize(BoxConstraints constraints) {
+      _currentSize = Size(constraints.maxWidth, constraints.maxHeight);
+      double widgetWidth = _currentSize!.width;
+      double widthDiff = 0.0;
+
+      if (_previousSize != null) {
+        widthDiff = _currentSize!.width / _previousSize!.width;
+      }
+
+      double left = _offset * widthDiff;
+      print("left: $left, widthDiff: $widthDiff");
+
+      _previousSize = _currentSize;
+
+      // 將x範圍限制圖表寬度內
+      double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
+
+      // 同步縮放滑鈕的狀態
+      double thumbControllerLeftOffset = getLineSeriesLeftOffset();
+      double maxViewportWidth = widgetWidth -
+          slidingButtonWidth * 2 -
+          thumbControllerLeftOffset -
+          _rightOffset;
+      double lOffsetX = -newOffsetX / _scale;
+      double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
+
+      double r = maxViewportWidth / widgetWidth;
+      lOffsetX *= r;
+      rOffsetX *= r;
+
+      // 因為使用 LayoutBuilder 所以不需要調用 setState
+      // setState(() {
+      _offset = newOffsetX;
+      _leftSlidingBtnLeft = lOffsetX;
+      _rightSlidingBtnRight = rOffsetX;
+      // });
     }
 
     if (!widget.showMultipleYAxises) {
