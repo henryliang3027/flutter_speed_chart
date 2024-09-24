@@ -224,6 +224,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
             .map((value) => value)
             .reduce((value, element) => value < element ? value : element);
       } else {
+        // 沒有資料點, 也沒有 MinYAxisValues, 則預設一個最小值
         _minValue = 0.0;
       }
 
@@ -232,6 +233,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
             .map((value) => value)
             .reduce((value, element) => value > element ? value : element);
       } else {
+        // 沒有資料點, 也沒有 MaxYAxisValues, 則預設一個最大值
         _maxValue = 10.0;
       }
     }
@@ -299,6 +301,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         if (lineSeries.minYAxisValue != null) {
           _minValues.add(lineSeries.minYAxisValue!);
         } else {
+          // 沒有資料點, 也沒有 MinYAxisValues, 則預設一個最小值
           _minValues.add(0.0);
         }
 
@@ -306,6 +309,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         if (lineSeries.maxYAxisValue != null) {
           _maxValues.add(lineSeries.maxYAxisValue!);
         } else {
+          // 沒有資料點, 也沒有 MaxYAxisValues, 則預設一個最大值
           _maxValues.add(10.0);
         }
       }
@@ -360,6 +364,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
+    // 根據多y軸或單y軸顯示模式來計算 leftOffset
     double getLineSeriesLeftOffset() {
       return widget.showMultipleYAxises
           ? 40.0 * widget.lineSeriesCollection.length
@@ -370,9 +375,13 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       double maxScale = 1;
       double lineSeriesLeftOffset = getLineSeriesLeftOffset();
 
+      // 以畫面中最少只顯示3個點當作 maxScale
+      // 顯示越少點代表點跟點之間的 xStep 越大
       double xStep =
           (widgetWidth - lineSeriesLeftOffset - _rightOffset - 1) / 3;
 
+      // 根據 xStep = (widgetWidth - lineSeriesLeftOffset - _rightOffset) / xRange * maxScale 算式
+      // 得出 maxScale
       if (_xRange == 0) {
         maxScale = (xStep + lineSeriesLeftOffset + _rightOffset) / widgetWidth;
       } else {
@@ -407,6 +416,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 根據縮放焦點算出圖的起始點
       double left = calculateOffsetX(newScale, focusX);
       print('left: $left');
+      print('extraX: $extraX');
 
       // 加上額外的水平偏移量
       left += extraX;
@@ -414,8 +424,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 將範圍限制在圖表寬度內
       double newOffsetX = left.clamp((newScale - 1) * -widgetWidth, 0.0);
 
-      // 根据缩放,同步缩略滑钮的状态
-      // 同步缩略滑钮的状态
+      // 根據縮放, 同步縮放滑鈕的狀態
       double lineSeriesLeftOffset = getLineSeriesLeftOffset();
       double maxViewportWidth = widgetWidth -
           slidingButtonWidth * 2 -
@@ -451,16 +460,15 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       double widgetWidth = context.size!.width;
       print('widgetWidth: ${widgetWidth}');
 
-      // 得到本次滑动的偏移量, 乘倍数后和之前的偏移量相减等于新的偏移量
-
+      // 得到本次滑動的偏移量, 乘倍數後和之前的偏移量相減等於新的偏移量
       double deltaX = (details.delta.dx) * 1.1;
       // _lastSlidingBarPosition = details.globalPosition.dx;
       double left = _offset - deltaX * _scale;
 
-      // 将x范围限制图表宽度内
+      // 將x範圍限制圖表寬度內
       double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
 
-      // 同步缩略滑钮的状态
+      // 同步縮放滑鈕的狀態
       double thumbControllerLeftOffset = getLineSeriesLeftOffset();
       double maxViewportWidth = widgetWidth -
           slidingButtonWidth * 2 -
@@ -499,10 +507,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       _previousSize = _currentSize;
 
-      // 将x范围限制图表宽度内
+      // 將x範圍限制圖表寬度內
       double newOffsetX = left.clamp((_scale - 1) * -widgetWidth, 0.0);
 
-      // 同步缩略滑钮的状态
+      // 同步縮放滑鈕的狀態
       double thumbControllerLeftOffset = getLineSeriesLeftOffset();
       double maxViewportWidth = widgetWidth -
           slidingButtonWidth * 2 -
@@ -515,6 +523,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       lOffsetX *= r;
       rOffsetX *= r;
 
+      // 因為使用 LayoutBuilder 所以不需要調用 setState
       // setState(() {
       _offset = newOffsetX;
       _leftSlidingBtnLeft = lOffsetX;
@@ -609,11 +618,12 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       print(
           'maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
 
-      // 最大窗口大小 / 当前窗口大小 = 应该缩放的倍数
+      // 最大視窗大小 / 目前視窗大小 = 應該縮放的倍數
       double newScale = maxViewportWidth / viewportWidth;
 
       print('newScale: $newScale');
-      // 计算缩放后的左偏移量
+
+      // 計算縮放後的左偏移量
       double newOffsetX = calculateOffsetX(newScale, 0.0);
 
       setState(() {
@@ -812,7 +822,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   double xStep = 0.0;
 
                   _deltaFocalPointX =
-                      (details.focalPoint.dx - _lastUpdateFocalPointX);
+                      details.focalPoint.dx - _lastUpdateFocalPointX;
                   _lastUpdateFocalPointX = details.focalPoint.dx;
 
                   // 跟 line series 的 left offset 一樣, 所以兩者是對齊的
