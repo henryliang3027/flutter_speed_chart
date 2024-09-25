@@ -39,41 +39,108 @@ Check my demo video : https://youtu.be/Bh4sUhu9UCM.
 ## Usage
 
 <h4 align="left">
-Prepare data points
+Prepare data points: DateTime format X-Axis
 </h4>
 
 ```dart
-LineSeries _getChartData({
+  LineSeries _getChartData({
     required List data,
     required Color color,
     required String name,
-}) {
-    List<DateValuePair> dataList = [];
+    double? maxYAxisValue,
+    double? minYAxisValue,
+  }) {
+    List<ValuePair> dataList = [];
     for (int i = 0; i < data.length; i++) {
-        var d = data[i];
-        DateTime dateTime = DateTime.parse(d['time'].toString());
-        double? value =
-            d['value'] == 'null' ? null : double.parse(d['value'].toString());
+      var d = data[i];
+      DateTime dateTime = DateTime.parse(d['time'].toString());
+      double? value =
+          d['value'] == 'null' ? null : double.parse(d['value'].toString());
 
-        dataList.add(DateValuePair(dateTime: dateTime, value: value));
+      dataList.add(ValuePair(x: dateTime, y: value));
     }
 
     LineSeries lineSeries = LineSeries(
-        name: name,
-        dataList: dataList,
-        color: color,
+      name: name,
+      dataList: dataList,
+      color: color,
+      maxYAxisValue: maxYAxisValue,
+      minYAxisValue: minYAxisValue,
     );
 
     return lineSeries;
+  }
+```
+
+<h4 align="left">
+Prepare data points: number format X-Axis
+</h4>
+
+```dart
+  LineSeries _getGenericTypeChartData({
+    required List data,
+    required Color color,
+    required String name,
+    double? maxYAxisValue,
+    double? minYAxisValue,
+  }) {
+    List<ValuePair> dataList = [];
+    for (int i = 0; i < data.length; i++) {
+      var d = data[i];
+      int freq = int.parse(d['freq'].toString());
+      double? level =
+          d['level'] == 'null' ? null : double.parse(d['level'].toString());
+
+      dataList.add(ValuePair(x: freq, y: level));
+    }
+
+    LineSeries lineSeries = LineSeries(
+      name: name,
+      dataList: dataList,
+      color: color,
+      maxYAxisValue: maxYAxisValue,
+      minYAxisValue: minYAxisValue,
+    );
+
+    return lineSeries;
+  }
+```
+
+<h4 align="left">
+Data structure of the LineSeries
+
+</h4>
+
+The ```maxYAxisValue```, ```minYAxisValue``` are optional, If provided, the y-axis range will be displayed based on the given values. If not provided, the y-axis range will automatically adjust based on the data points."
+
+```
+class LineSeries {
+  const LineSeries({
+    required this.name,
+    required this.dataList,
+    required this.color,
+    this.maxYAxisValue,
+    this.minYAxisValue,
+  });
+
+  final String name;
+  final List<ValuePair> dataList;
+  final Color color;
+  final double? maxYAxisValue;
+  final double? minYAxisValue;
 }
 ```
+
+```showLegend``` displays each line series's name and color to identify the corresponding line series in the chart.  
+```showMultipleYAxises``` displays multiple Y-axes.  
+```showScaleThumbs``` displays a scale thumb on the chart, used for scaling and panning the line series. It is recommended for use on desktop platforms as an alternative to hand gestures.  
 
 <h4 align="left">
 Create a single line chart
 </h4>
 
-```dart
 
+```dart
 List<LineSeries> lineSeriesCollection = [
     _getChartData(
         data: [
