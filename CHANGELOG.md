@@ -12,3 +12,8 @@
 
 ### Changed
 - N/A
+
+## [1.0.1] - 2024-09-25
+### Changed
+- Update github readme 
+- Update platform support list
