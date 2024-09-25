@@ -108,8 +108,10 @@ Prepare data points: number format X-Axis
 
 <h4 align="left">
 Data structure of the LineSeries
-The ```maxYAxisValue```, ```minYAxisValue``` are optional, If provided, the y-axis range will be displayed based on the given values. If not provided, the y-axis range will automatically adjust based on the data points."
+
 </h4>
+
+The ```maxYAxisValue```, ```minYAxisValue``` are optional, If provided, the y-axis range will be displayed based on the given values. If not provided, the y-axis range will automatically adjust based on the data points."
 
 ```
 class LineSeries {
@@ -129,11 +131,11 @@ class LineSeries {
 }
 ```
 
-<h4 align="left">
 ```showLegend```displays each line series's name and color to identify the corresponding line series in the chart.
 ```showMultipleYAxises```displays multiple Y-axes.
 ```showScaleThumbs```displays a scale thumb on the chart, used for scaling and panning the line series. It is recommended for use on desktop platforms as an alternative to hand gestures.
- 
+
+<h4 align="left">
 Create a single line chart
 </h4>
 
