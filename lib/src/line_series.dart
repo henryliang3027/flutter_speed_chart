@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_chart/src/value_pair.dart';
+import 'package:speed_chart/src/value_pair.dart';
 
 class LineSeries {
   const LineSeries({

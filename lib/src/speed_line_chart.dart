@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_chart/src/constants.dart';
-import 'package:flutter_speed_chart/src/legend.dart';
-import 'package:flutter_speed_chart/src/line_chart_painter.dart';
-import 'package:flutter_speed_chart/src/line_series.dart';
-import 'package:flutter_speed_chart/src/value_pair.dart';
+import 'package:speed_chart/src/constants.dart';
+import 'package:speed_chart/src/legend.dart';
+import 'package:speed_chart/src/line_chart_painter.dart';
+import 'package:speed_chart/src/line_series.dart';
+import 'package:speed_chart/src/value_pair.dart';
 
 class LineSeriesX {
   const LineSeriesX({
@@ -79,7 +79,6 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   double _lastLeftSlidingBtnLeft = 0.0;
   double _rightSlidingBtnRight = 0.0;
   double _lastRightSlidingBtnRight = 0.0;
-  double _lastSlidingBarPosition = 0.0;
 
   Timer? _onPressTimer;
 
@@ -415,8 +414,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       // 根據縮放焦點算出圖的起始點
       double left = calculateOffsetX(newScale, focusX);
-      print('left: $left');
-      print('extraX: $extraX');
+      // print('left: $left');
+      // print('extraX: $extraX');
 
       // 加上額外的水平偏移量
       left += extraX;
@@ -441,7 +440,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       lOffsetX = lOffsetX < 0 ? 0 : lOffsetX;
       rOffsetX = rOffsetX < 0 ? 0 : rOffsetX;
 
-      print('_scale: $_scale');
+      // print('_scale: $_scale');
 
       setState(() {
         _scale = newScale;
@@ -452,9 +451,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     }
 
     // 滑鈕中間的區域的拖曳操作
-    _onSlidingBarHorizontalDragStart(DragStartDetails details) {
-      _lastSlidingBarPosition = details.globalPosition.dx;
-    }
+    _onSlidingBarHorizontalDragStart(DragStartDetails details) {}
 
     _onSlidingBarHorizontalDragUpdate(DragUpdateDetails details) {
       double widgetWidth = context.size!.width;
@@ -471,8 +468,6 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 讓滑鈕的移動跟游標同步
       double deltaX = (details.delta.dx) * (widgetWidth / maxViewportWidth);
 
-      _lastSlidingBarPosition = details.globalPosition.dx;
-
       // 本次滑動的偏移量乘上 scale 倍數後和之前的偏移量相減等於新的偏移量
       double left = _offset - deltaX * _scale;
 
@@ -482,13 +477,12 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       double lOffsetX = -newOffsetX / _scale;
       double rOffsetX = ((_scale - 1) * widgetWidth + newOffsetX) / _scale;
 
-      print(
-          'lOffsetX: ${lOffsetX} rOffsetX: $_scale, $widgetWidth, $newOffsetX, $rOffsetX');
+      // print('lOffsetX: ${lOffsetX} rOffsetX: $_scale, $widgetWidth, $newOffsetX, $rOffsetX');
 
       lOffsetX *= r;
       rOffsetX *= r;
 
-      print('deltaX: ${details.delta.dx}, widgetWidth: $widgetWidth, r: $r');
+      // print('deltaX: ${details.delta.dx}, widgetWidth: $widgetWidth, r: $r');
 
       setState(() {
         _offset = newOffsetX;
@@ -504,7 +498,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 按鈕的左側的x (起點) = 觸控的x軸座標 - 前一次按鈕的左側到左邊起點的滑動距離
       _lastLeftSlidingBtnLeft = details.globalPosition.dx - _leftSlidingBtnLeft;
 
-      print('_leftSlidingBtnLeft: ${_leftSlidingBtnLeft}');
+      // print('_leftSlidingBtnLeft: ${_leftSlidingBtnLeft}');
     }
 
     _onLBHorizontalDragUpdate(DragUpdateDetails details) {
@@ -533,8 +527,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       double viewportWidth =
           maxViewportWidth - newLOffsetX - _rightSlidingBtnRight;
 
-      print(
-          'maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
+      // print('maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
 
       // 最大視窗大小 / 目前視窗大小 = 應該縮放的倍數
       double newScale = maxViewportWidth / viewportWidth;
@@ -555,8 +548,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 按鈕的右側的x (起點) = 觸控的x軸座標 + 前一次按鈕的右側到右邊起點的滑動距離
       _lastRightSlidingBtnRight =
           details.globalPosition.dx + _rightSlidingBtnRight;
-      print('details.globalPosition.dx: ${details.globalPosition.dx}');
-      print('_rightSlidingBtnRight: ${_rightSlidingBtnRight}');
+      // print('details.globalPosition.dx: ${details.globalPosition.dx}');
+      // print('_rightSlidingBtnRight: ${_rightSlidingBtnRight}');
     }
 
     _onRBHorizontalDragUpdate(DragUpdateDetails details) {
@@ -581,13 +574,12 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       double viewportWidth =
           maxViewportWidth - _leftSlidingBtnLeft - newROffsetX;
 
-      print(
-          'maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
+      // print('maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
 
       // 最大視窗大小 / 目前視窗大小 = 應該縮放的倍數
       double newScale = maxViewportWidth / viewportWidth;
 
-      print('newScale: $newScale');
+      // print('newScale: $newScale');
 
       // 計算縮放後的左偏移量
       double newOffsetX = calculateOffsetX(newScale, 0.0);
@@ -706,7 +698,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       }
 
       double left = _offset * widthDiff;
-      print("left: $left, widthDiff: $widthDiff");
+      // print("left: $left, widthDiff: $widthDiff");
 
       _previousSize = _currentSize;
 
@@ -784,13 +776,13 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
             ),
             GestureDetector(
               onScaleStart: (details) {
-                print('Scale start');
+                // print('Scale start');
 
                 // 當兩隻手指點擊縮放時取消 trackball
                 if (details.pointerCount == 2) {
                   setState(() {
                     if (_onPressTimer != null) {
-                      print('cancel timer');
+                      // print('cancel timer');
                       _onPressTimer!.cancel();
                       _onPressTimer = null;
                     }
@@ -844,7 +836,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                         (_xRange - 1);
                   }
 
-                  print('xStep: ${xStep}, newScale: ${newScale}');
+                  // print('xStep: ${xStep}, newScale: ${newScale}');
                   // 最大 scale 為畫面上至少要有一個點
                   // xStep 要小於整個 chart 的寬度
                   if (xStep <
@@ -855,10 +847,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                 }
               },
               onScaleEnd: (details) {
-                print('Scale end');
+                // print('Scale end');
                 setState(() {
                   if (_onPressTimer != null) {
-                    print('cancel timer');
+                    // print('cancel timer');
                     _onPressTimer!.cancel();
                     _onPressTimer = null;
                   }
@@ -872,7 +864,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                 print('onTapDown');
                 _onPressTimer ??= Timer(Duration(milliseconds: 200), () {
                   // 時間到的時候判斷按下是否有移動, 如果沒有則顯示 trackball
-                  print('timer ${_deltaFocalPointX}');
+                  // print('timer ${_deltaFocalPointX}');
                   if (_deltaFocalPointX == 0) {
                     setState(() {
                       _showTrackball = true;
@@ -884,10 +876,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               onTapUp: (details) {
                 // 只有按下和不按,沒有任何移動時會觸發
                 // 不按時 _showTrackball = false
-                print('onTapUp');
+                // print('onTapUp');
                 setState(() {
                   if (_onPressTimer != null) {
-                    print('cancel timer');
+                    // print('cancel timer');
                     _onPressTimer!.cancel();
                     _onPressTimer = null;
                   }
@@ -899,7 +891,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               },
               onVerticalDragUpdate: (details) {
                 // 按下時往垂直方向移動(或不是水平移動)就會觸發這裡的update 事件而不會觸發 onScaleUpdate, 所以在這裡也更新長按的點
-                print('onVerticalDragUpdate ${details.localPosition.dx}');
+                // print('onVerticalDragUpdate ${details.localPosition.dx}');
 
                 if (_showTrackball) {
                   setState(() {
@@ -908,10 +900,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                 }
               },
               onVerticalDragEnd: (details) {
-                print('onVerticalDragEnd');
+                // print('onVerticalDragEnd');
                 setState(() {
                   if (_onPressTimer != null) {
-                    print('cancel timer');
+                    // print('cancel timer');
                     _onPressTimer!.cancel();
                     _onPressTimer = null;
                   }
@@ -924,7 +916,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               onVerticalDragCancel: () {
                 // 按下時直接往水平方向移動會觸發
                 // 也會觸發onScaleUpdate
-                print('onVerticalDragCancel');
+                // print('onVerticalDragCancel');
               },
               child: CustomPaint(
                 size: Size(

@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_chart/src/value_pair.dart';
-import 'package:flutter_speed_chart/src/speed_line_chart.dart';
+import 'package:speed_chart/src/value_pair.dart';
+import 'package:speed_chart/src/speed_line_chart.dart';
 import 'package:intl/intl.dart';
 
 class LineChartPainter extends CustomPainter {
@@ -328,7 +328,7 @@ class LineChartPainter extends CustomPainter {
         adjustedLongPressX = longPressX.clamp(0.0, size.width);
       }
 
-      print('adjustedLongPressX: $adjustedLongPressX');
+      // print('adjustedLongPressX: $adjustedLongPressX');
 
       int? closestIndex = _findClosestIndex(
         x: adjustedLongPressX,
@@ -397,7 +397,7 @@ class LineChartPainter extends CustomPainter {
             (rectWidth + 16) -
             (size.width - lineSeriesLeftOffset - rightOffset) +
             offset;
-        print('offset: $offset');
+        // print('offset: $offset');
         double adjustedTextX = outOfBoundWidth > 0 ? outOfBoundWidth : 0;
         Rect rect1 = Rect.fromLTWH(
           textX - 4 - adjustedTextX,

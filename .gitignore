@@ -29,4 +29,4 @@
 build/
 
 # FVM Version Cache
-.fvm/.failed_tracker
+.fvm/

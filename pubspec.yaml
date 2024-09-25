@@ -1,7 +1,7 @@
-name: flutter_speed_chart
+name: speed_chart
 description: A new Flutter package project.
-version: 0.0.1
-homepage:
+version: 1.0.0
+repository: https://github.com/henryliang3027/flutter_speed_chart.git
 
 environment:
   sdk: ">=2.18.2 <3.0.0"
