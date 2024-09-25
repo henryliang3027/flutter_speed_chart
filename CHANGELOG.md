@@ -17,3 +17,8 @@
 ### Changed
 - Update github readme 
 - Update platform support list
+
+
+## [1.0.2] - 2024-09-25
+### Changed
+- Update changelog
