@@ -131,9 +131,9 @@ class LineSeries {
 }
 ```
 
-```showLegend```displays each line series's name and color to identify the corresponding line series in the chart.  
-```showMultipleYAxises```displays multiple Y-axes.  
-```showScaleThumbs```displays a scale thumb on the chart, used for scaling and panning the line series. It is recommended for use on desktop platforms as an alternative to hand gestures.  
+```showLegend``` displays each line series's name and color to identify the corresponding line series in the chart.  
+```showMultipleYAxises``` displays multiple Y-axes.  
+```showScaleThumbs``` displays a scale thumb on the chart, used for scaling and panning the line series. It is recommended for use on desktop platforms as an alternative to hand gestures.  
 
 <h4 align="left">
 Create a single line chart
