@@ -1,10 +1,10 @@
-name: flutter_speed_chart
-description: A new Flutter package project.
-version: 0.0.1
-homepage:
+name: speed_chart
+description: An efficient line chart widget featuring both horizontal and vertical axes, allowing interactive gestures for exploring and visualizing data. Supports seamless functionality across both mobile and desktop platforms.
+version: 1.0.0
+repository: https://github.com/henryliang3027/flutter_speed_chart.git
 
 environment:
-  sdk: ">=2.18.2 <3.0.0"
+  sdk: ">=2.18.2 <4.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
@@ -22,7 +22,11 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-
+  platforms:
+    android:
+    ios:
+    macos:
+    windows:
   # To add assets to your package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

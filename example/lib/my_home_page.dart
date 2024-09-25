@@ -1,13 +1,12 @@
-import 'package:example/data_1_1.dart';
+import 'package:example/data_with_null.dart';
 import 'package:example/data_3.dart';
 import 'package:example/data_3_3.dart';
 import 'package:example/data_3_3_3.dart';
 import 'package:example/data_3_3_3_3.dart';
-import 'package:example/data_dsim_1.dart';
+import 'package:example/full_screen_chart.dart';
+import 'package:example/rf_data_1.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_chart/speed_chart.dart';
-
-import 'data_dsim_2.dart';
+import 'package:speed_chart/speed_chart.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -28,13 +27,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<LineSeries> _lineSeriesCollectionEmpty = [];
+  List<LineSeries> _lineSeriesCollectionWithNull = [];
   List<LineSeries> _lineSeriesCollection0 = [];
-  List<LineSeries> _lineSeriesCollection1 = [];
-  List<LineSeries> _lineSeriesCollection2 = [];
-  List<LineSeries> _lineSeriesCollection3 = [];
   List<LineSeries> _lineSeriesCollection4 = [];
-  List<LineSeries> _lineSeriesCollectionDsimAPT = [];
-  List<LineSeries> _lineSeriesCollectionDsimVoltage = [];
+  List<LineSeries> _lineSeriesCollectionRF = [];
 
   LineSeries _getChartData({
     required List data,
@@ -43,14 +40,42 @@ class _MyHomePageState extends State<MyHomePage> {
     double? maxYAxisValue,
     double? minYAxisValue,
   }) {
-    List<DateValuePair> dataList = [];
+    List<ValuePair> dataList = [];
     for (int i = 0; i < data.length; i++) {
       var d = data[i];
       DateTime dateTime = DateTime.parse(d['time'].toString());
       double? value =
           d['value'] == 'null' ? null : double.parse(d['value'].toString());
 
-      dataList.add(DateValuePair(dateTime: dateTime, value: value));
+      dataList.add(ValuePair(x: dateTime, y: value));
+    }
+
+    LineSeries lineSeries = LineSeries(
+      name: name,
+      dataList: dataList,
+      color: color,
+      maxYAxisValue: maxYAxisValue,
+      minYAxisValue: minYAxisValue,
+    );
+
+    return lineSeries;
+  }
+
+  LineSeries _getGenericTypeChartData({
+    required List data,
+    required Color color,
+    required String name,
+    double? maxYAxisValue,
+    double? minYAxisValue,
+  }) {
+    List<ValuePair> dataList = [];
+    for (int i = 0; i < data.length; i++) {
+      var d = data[i];
+      int freq = int.parse(d['freq'].toString());
+      double? level =
+          d['level'] == 'null' ? null : double.parse(d['level'].toString());
+
+      dataList.add(ValuePair(x: freq, y: level));
     }
 
     LineSeries lineSeries = LineSeries(
@@ -68,71 +93,64 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    _lineSeriesCollection0 = [
+    _lineSeriesCollectionEmpty = [
       _getChartData(
-        data: [
-          // {"time": "2022-09-16 00:41:38", "value": "20"},
-          // {"time": "2022-09-16 00:51:39", "value": "30"},
-          {"time": "2022-09-16 01:01:38", "value": "null"},
-        ],
+        data: [],
         color: Colors.red,
-        name: 'Line0',
+        name: 'LineEmpty',
         maxYAxisValue: 4000,
         minYAxisValue: 0,
       ),
+    ];
+
+    _lineSeriesCollectionWithNull = [
+      _getChartData(
+        data: jsonDataWithNull,
+        color: Colors.red,
+        name: 'Line',
+        maxYAxisValue: 60,
+        minYAxisValue: 0,
+      ),
+    ];
+
+    _lineSeriesCollection0 = [
       _getChartData(
         data: [
-          // {"time": "2022-09-16 00:41:38", "value": "null"},
-          {"time": "2022-09-16 00:51:39", "value": "56"},
-          // {"time": "2022-09-16 01:01:38", "value": "null"},
+          {"time": "2022-09-16 00:51:38", "value": "300"},
+          {"time": "2022-09-16 00:41:39", "value": "30"},
+          {"time": "2022-09-16 01:01:38", "value": "22"},
+          {"time": "2022-09-16 00:52:28", "value": "20"},
+          {"time": "2022-09-16 03:41:39", "value": "70"},
+          {"time": "2022-09-16 01:03:38", "value": "62"},
+          {"time": "2022-09-16 02:51:38", "value": "-100"},
+          {"time": "2022-09-16 04:43:39", "value": "40"},
+          {"time": "2022-09-16 07:07:38", "value": "-30"},
+        ],
+        color: Colors.red,
+        name: 'Line0',
+        maxYAxisValue: 300,
+        minYAxisValue: -30,
+      ),
+      _getChartData(
+        data: [
+          {"time": "2022-09-16 00:51:38", "value": "100"},
+          {"time": "2022-09-16 00:41:39", "value": "23"},
+          {"time": "2022-09-16 01:01:38", "value": "45"},
+          {"time": "2022-09-16 00:52:28", "value": "87"},
+          {"time": "2022-09-16 03:41:39", "value": "67"},
+          {"time": "2022-09-16 01:03:38", "value": "78"},
+          {"time": "2022-09-16 02:51:38", "value": "-99"},
+          {"time": "2022-09-16 04:43:39", "value": "12"},
+          {"time": "2022-09-16 07:07:38", "value": "-24"},
         ],
         color: Colors.orange,
         name: 'Line1',
-      ),
-    ];
-
-    _lineSeriesCollection1 = [
-      _getChartData(
-        data: jsonData1_1,
-        color: Colors.red,
-        name: 'Line1',
-      ),
-    ];
-
-    _lineSeriesCollection2 = [
-      _getChartData(
-        data: jsonData1_1,
-        color: Colors.red,
-        name: 'Line1',
-      ),
-      _getChartData(
-        data: jsonData3_3,
-        color: Colors.orange,
-        name: 'Line2',
-      ),
-    ];
-
-    _lineSeriesCollection3 = [
-      _getChartData(
-        data: jsonData1_1,
-        color: Colors.red,
-        name: 'Line1',
-      ),
-      _getChartData(
-        data: jsonData3_3,
-        color: Colors.orange,
-        name: 'Line2',
-      ),
-      _getChartData(
-        data: jsonData3_3_3,
-        color: Colors.green,
-        name: 'Line3',
       ),
     ];
 
     _lineSeriesCollection4 = [
       _getChartData(
-        data: jsonData1_1,
+        data: jsonData3,
         color: Colors.red,
         name: 'Line1',
       ),
@@ -153,36 +171,39 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ];
 
-    _lineSeriesCollectionDsimAPT = [
-      _getChartData(
-        data: jsonData_att2,
-        color: Colors.red,
-        name: 'Attenuator',
-      ),
-      _getChartData(
-        data: jsonData_temp2,
-        color: Colors.orange,
-        name: 'Temperature',
-      ),
-      _getChartData(
-        data: jsonData_pilot2,
-        color: Colors.green,
-        name: 'Pilot',
+    _lineSeriesCollectionRF = [
+      _getGenericTypeChartData(
+        data: rfOutputs,
+        color: Colors.blue,
+        name: 'RFLevel',
       ),
     ];
+  }
 
-    _lineSeriesCollectionDsimVoltage = [
-      _getChartData(
-        data: jsonData_voltage2,
-        color: Colors.red,
-        name: 'Attenuator',
+  Widget fullScreen({required List<LineSeries> lineSeriesCollection}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10.0),
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            FullScreenChartForm.route(
+              title: 'Monitoring Chart',
+              lineSeriesCollection: lineSeriesCollection,
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.all(0.0),
+          visualDensity: const VisualDensity(horizontal: -4.0, vertical: -3.0),
+        ),
+        child: const Icon(
+          Icons.fullscreen_outlined,
+        ),
       ),
-      _getChartData(
-        data: jsonData_voltage_ripple2,
-        color: Colors.orange,
-        name: 'Temperature',
-      ),
-    ];
+    );
   }
 
   @override
@@ -193,89 +214,68 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             _Counter(
-              lineSeriesCollection: _lineSeriesCollectionDsimAPT,
+              lineSeriesCollection: _lineSeriesCollectionRF,
             ),
+            fullScreen(lineSeriesCollection: _lineSeriesCollectionRF),
             SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollectionDsimAPT,
+              lineSeriesCollection: _lineSeriesCollectionRF,
+              title: _lineSeriesCollectionRF[0].name,
+              showLegend: false,
+              showScaleThumbs: true,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollection4,
+            ),
+            fullScreen(lineSeriesCollection: _lineSeriesCollection4),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollection4,
               showLegend: true,
-              showMultipleYAxises: true,
+            ),
+            const SizedBox(
+              height: 30.0,
+            ),
+            _Counter(
+              lineSeriesCollection: _lineSeriesCollectionWithNull,
+            ),
+            fullScreen(lineSeriesCollection: _lineSeriesCollectionWithNull),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollectionWithNull,
+              showLegend: true,
             ),
             const SizedBox(
               height: 30.0,
             ),
             // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollectionDsimVoltage,
-            //   showLegend: true,
-            //   showMultipleYAxises: true,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-            // _Counter(
             //   lineSeriesCollection: _lineSeriesCollection0,
             // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            //   title: _lineSeriesCollection0[0].name,
-            //   showLegend: false,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            // ),
+            // fullScreen(lineSeriesCollection: _lineSeriesCollection0),
             // SpeedLineChart(
             //   lineSeriesCollection: _lineSeriesCollection0,
             //   title: _lineSeriesCollection0[0].name,
             //   showLegend: true,
-            //   showMultipleYAxises: true,
+            //   showMultipleYAxises: false,
+            //   showScaleThumbs: true,
             // ),
             // const SizedBox(
             //   height: 30.0,
             // ),
             // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection1,
+            //   lineSeriesCollection: _lineSeriesCollection1p8G1,
             // ),
+            // fullScreen(lineSeriesCollection: _lineSeriesCollection1p8G1),
             // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection1,
+            //   lineSeriesCollection: _lineSeriesCollection1p8G1,
             //   showLegend: true,
+            //   showScaleThumbs: true,
             // ),
             // const SizedBox(
             //   height: 30.0,
-            // ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection2,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection2,
-            //   showLegend: true,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection3,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection3,
-            //   showLegend: true,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection4,
-            // ),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection4,
-            //   showLegend: true,
             // ),
           ],
         ),

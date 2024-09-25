@@ -1,14 +1,14 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_chart/src/date_value_pair.dart';
-import 'package:flutter_speed_chart/src/speed_line_chart.dart';
+import 'package:speed_chart/src/value_pair.dart';
+import 'package:speed_chart/src/speed_line_chart.dart';
 import 'package:intl/intl.dart';
 
 class LineChartPainter extends CustomPainter {
   LineChartPainter({
     required this.lineSeriesXCollection,
     required this.longestLineSeriesX,
-    required this.showTooltip,
+    required this.showTrackball,
     required this.longPressX,
     required this.leftOffset,
     required this.rightOffset,
@@ -16,19 +16,19 @@ class LineChartPainter extends CustomPainter {
     required this.scale,
     required this.minValue,
     required this.maxValue,
-    required this.minDate,
-    required this.maxDate,
     required this.xRange,
     required this.yRange,
     required this.showMultipleYAxises,
     required this.minValues,
     required this.maxValues,
     required this.yRanges,
+    required this.axisPaint,
+    required this.verticalLinePaint,
   });
 
   final List<LineSeriesX> lineSeriesXCollection;
   final LineSeriesX longestLineSeriesX;
-  final bool showTooltip;
+  final bool showTrackball;
   final double longPressX;
   final double leftOffset;
   final double rightOffset;
@@ -36,17 +36,17 @@ class LineChartPainter extends CustomPainter {
   final double scale;
   final double minValue;
   final double maxValue;
-  final DateTime? minDate;
-  final DateTime? maxDate;
   final double xRange;
   final double yRange;
   final bool showMultipleYAxises;
   final List<double> minValues;
   final List<double> maxValues;
   final List<double> yRanges;
+  final Paint axisPaint;
+  final Paint verticalLinePaint;
 
   final TextPainter _axisLabelPainter = TextPainter(
-    textAlign: TextAlign.left,
+    textAlign: TextAlign.right,
     textDirection: ui.TextDirection.ltr,
   );
 
@@ -59,57 +59,50 @@ class LineChartPainter extends CustomPainter {
     ..color = Colors.grey.withOpacity(0.4)
     ..strokeWidth = 1;
 
-  final Paint _axisPaint = Paint()
-    ..color = Colors.black
-    ..strokeWidth = 1;
-
-  final Paint _verticalLinePaint = Paint()
-    ..color = Colors.black
-    ..strokeWidth = 1.0
-    ..strokeCap = StrokeCap.round
-    ..style = PaintingStyle.stroke;
-
   final Paint _dividerPaint = Paint()
     ..color = Colors.black
     ..strokeWidth = 1.0
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke;
 
-  DateTime? _findClosestPoint({
+  int? _findClosestIndex({
     required double x,
     required double offsetX,
     required double xStep,
   }) {
     double closestDistance = double.infinity;
-    DateTime? closestDateTime;
+    int? closestIndex;
 
-    if (longestLineSeriesX.dataMap.isNotEmpty) {
-      for (DateTime dateTime in longestLineSeriesX.dataMap.keys) {
-        // because sthe start point of line series is in canvas.translate(leftOffset + offset, 0);
-        // add offsetX to adjust the difference between target datetime and min datetime
-        double distance =
-            (dateTime.difference(minDate!).inSeconds.toDouble() * xStep +
-                    offsetX -
-                    x)
-                .abs();
+    if (longestLineSeriesX.dataList.isNotEmpty) {
+      for (int i = 0; i < longestLineSeriesX.dataList.length; i++) {
+        // because sthe start point of line series is in canvas.translate(offset, 0)
+        // add offsetX to adjust the i-th point
+        double distance = (i * xStep + offsetX - x).abs();
 
         if (distance < closestDistance) {
           closestDistance = distance;
-          closestDateTime = dateTime;
+          closestIndex = i;
         }
       }
-      return closestDateTime;
+
+      return closestIndex;
     } else {
       return null;
     }
   }
 
-  List<Map<int, double?>> _getValueByDateTime(DateTime dateTime) {
+  List<Map<int, double?>> _getYByClosetIndex(int index) {
     List<Map<int, double?>> valueMapList = [];
     for (int i = 0; i < lineSeriesXCollection.length; i++) {
       LineSeriesX lineSeriesX = lineSeriesXCollection[i];
       Map<int, double?> valueMap = {};
-      valueMap[i] = lineSeriesX.dataMap[dateTime];
+
+      if (index >= lineSeriesX.dataList.length) {
+        valueMap[i] = null;
+      } else {
+        valueMap[i] = lineSeriesX.dataList[index].y;
+      }
+
       valueMapList.add(valueMap);
     }
     // valueMapList = [{'name': value},{'name': value}]
@@ -126,7 +119,10 @@ class LineChartPainter extends CustomPainter {
     required Size size,
   }) {
     canvas.drawLine(
-        Offset(leftOffset, 0), Offset(leftOffset, size.height), _axisPaint);
+      Offset(leftOffset, 0),
+      Offset(leftOffset, size.height),
+      axisPaint,
+    );
   }
 
   // Draw X-Axis
@@ -134,8 +130,11 @@ class LineChartPainter extends CustomPainter {
     required Canvas canvas,
     required Size size,
   }) {
-    canvas.drawLine(Offset(leftOffset, size.height),
-        Offset(size.width + leftOffset - rightOffset, size.height), _axisPaint);
+    canvas.drawLine(
+      Offset(leftOffset, size.height),
+      Offset(size.width - rightOffset, size.height), // size.width 是畫面中最右邊的位置
+      axisPaint,
+    );
   }
 
   void _drawXAxisForMultipleYAxises({
@@ -145,65 +144,88 @@ class LineChartPainter extends CustomPainter {
     double newLeftOffset = leftOffset + 40 * (lineSeriesXCollection.length - 1);
 
     canvas.drawLine(
-        Offset(newLeftOffset, size.height),
-        Offset(size.width + newLeftOffset - rightOffset, size.height),
-        _axisPaint);
+      Offset(newLeftOffset, size.height),
+      Offset(size.width - rightOffset, size.height),
+      axisPaint,
+    );
   }
 
-  // Draw vertical grid line and X-Axis scale points
+  // Draw a vertical grid line and a X-Axis label with a given point
+  void _drawXLabelAndVerticalGridLine({
+    required Canvas canvas,
+    required Size size,
+    required double scaleX,
+    dynamic x,
+  }) {
+    String xLabel = '';
+    if (x is DateTime) {
+      String date = DateFormat('yyyy-MM-dd').format(x);
+      String time = DateFormat('HH:mm:ss').format(x);
+      xLabel = '$date\n$time';
+    } else {
+      xLabel = x.toString();
+    }
+
+    _axisLabelPainter.text = TextSpan(
+      text: xLabel,
+      style: TextStyle(
+        fontSize: 12,
+        color: axisPaint.color,
+      ),
+    );
+
+    _axisLabelPainter.layout();
+
+    // 如果字會超過最左邊的邊界就不畫
+    if (scaleX - _axisLabelPainter.width > 0) {
+      // Draw vertical grid line
+      canvas.drawLine(
+          Offset(scaleX, 0), Offset(scaleX, size.height), _gridPaint);
+
+      // Draw label
+      _axisLabelPainter.paint(
+          canvas, Offset(scaleX - _axisLabelPainter.width, size.height));
+    }
+  }
+
+  // Draw vertical grid lines and X-Axis labels
   void _drawXAxisLabelAndVerticalGridLine({
     required Canvas canvas,
     required Size size,
     required double xStep,
   }) {
-    int xScalePoints = size.width * scale ~/ 100;
-    // longestLineSeriesX.dataList.length - 1 is to avoid (i * xInterval).round() is equal to longestLineSeriesX.dataList.length
-    int xInterval =
-        (maxDate!.millisecondsSinceEpoch - minDate!.millisecondsSinceEpoch) ~/
-            1000 ~/
-            xScalePoints;
-    for (int i = 0; i < xScalePoints; i++) {
-      DateTime dateTimeScalePoint = DateTime.fromMillisecondsSinceEpoch(
-          minDate!.millisecondsSinceEpoch + xInterval * 1000 * i);
+    List<ValuePair> dataList = longestLineSeriesX.dataList;
+    int currentLabelIndex = -1;
 
-      double scaleX =
-          dateTimeScalePoint.difference(minDate!).inSeconds.toDouble() * xStep;
+    for (int i = dataList.length - 1; i > 0; i--) {
+      // 最後一個點優先畫出來
+      if (i == dataList.length - 1) {
+        currentLabelIndex = i;
+        _drawXLabelAndVerticalGridLine(
+          canvas: canvas,
+          size: size,
+          scaleX: currentLabelIndex * xStep,
+          x: dataList[currentLabelIndex].x,
+        );
+      } else {
+        double currentPointX = i * xStep;
+        double previousPointX = currentLabelIndex * xStep;
 
-      // double scaleX = (longestLineSeriesX
-      //         .dataList[(i * xInterval).round()].dateTime
-      //         .difference(minDate)
-      //         .inSeconds
-      //         .toDouble() *
-      //     xStep);
-
-      // Draw vertical grid line
-      canvas.drawLine(
-          Offset(scaleX, 0), Offset(scaleX, size.height), _gridPaint);
-
-      // Draw X-Axis scale points
-      // DateTime dateTime =
-      //     longestLineSeriesX.dataList[(i * xInterval).round()].dateTime;
-      // String date = DateFormat('yy-MM-dd').format(dateTime);
-
-      // String time = DateFormat('HH:mm:ss').format(dateTime);
-
-      String date = DateFormat('yyyy-MM-dd').format(dateTimeScalePoint);
-
-      String time = DateFormat('HH:mm:ss').format(dateTimeScalePoint);
-
-      _axisLabelPainter.text = TextSpan(
-        text: '$date\n$time',
-        style: const TextStyle(
-          fontSize: 12,
-          color: Colors.black,
-        ),
-      );
-      _axisLabelPainter.layout();
-      _axisLabelPainter.paint(canvas, Offset(scaleX, size.height));
+        // 在畫面中每間隔 100 個單位畫一條 vertical grid line
+        if (previousPointX - currentPointX > 100) {
+          currentLabelIndex = i;
+          _drawXLabelAndVerticalGridLine(
+            canvas: canvas,
+            size: size,
+            scaleX: currentLabelIndex * xStep,
+            x: dataList[currentLabelIndex].x,
+          );
+        }
+      }
     }
   }
 
-  // Draw horizontal grid line and Y-axis scale points
+  // Draw horizontal grid lines and Y-axis labels
   void _drawYAxisLabelAndHorizontalGridLine({
     required Canvas canvas,
     required Size size,
@@ -216,22 +238,22 @@ class LineChartPainter extends CustomPainter {
 
       // Draw horizontal grid line
       canvas.drawLine(Offset(leftOffset, scaleY),
-          Offset(size.width - rightOffset + leftOffset, scaleY), _gridPaint);
+          Offset(size.width - rightOffset, scaleY), _gridPaint);
 
-      // Draw Y-axis scale points
+      // Draw Y-axis label
       String label = (i * yInterval + minValue).toStringAsFixed(0);
       _axisLabelPainter.text = TextSpan(
         text: label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
-          color: Colors.black,
+          color: axisPaint.color,
         ),
       );
       _axisLabelPainter.layout();
       _axisLabelPainter.paint(
           canvas,
           Offset(leftOffset - _axisLabelPainter.width - 4,
-              scaleY - _axisLabelPainter.height));
+              scaleY - _axisLabelPainter.height / 2));
     }
   }
 
@@ -244,8 +266,11 @@ class LineChartPainter extends CustomPainter {
       double newLeftOffset = leftOffset + 40 * i;
 
       // Draw Y-Axis
-      canvas.drawLine(Offset(newLeftOffset, 0),
-          Offset(newLeftOffset, size.height), _axisPaint);
+      canvas.drawLine(
+        Offset(newLeftOffset, 0),
+        Offset(newLeftOffset, size.height),
+        axisPaint,
+      );
 
       int yScalePoints = 5;
       double yInterval = yRanges[i] / yScalePoints;
@@ -255,26 +280,30 @@ class LineChartPainter extends CustomPainter {
 
         // Draw horizontal grid line
         if (i == lineSeriesXCollection.length - 1) {
-          canvas.drawLine(
-              Offset(newLeftOffset, scaleY),
-              Offset(size.width - rightOffset + newLeftOffset, scaleY),
-              _gridPaint);
+          canvas.drawLine(Offset(newLeftOffset, scaleY),
+              Offset(size.width - rightOffset, scaleY), _gridPaint);
         }
 
         // Draw Y-axis scale points
         String label = (j * yInterval + minValues[i]).toStringAsFixed(0);
-        _axisLabelPainter.text = TextSpan(
+
+        TextPainter multipleYAxisLabelPainter = TextPainter(
+          textAlign: TextAlign.right,
+          textDirection: ui.TextDirection.ltr,
+        );
+
+        multipleYAxisLabelPainter.text = TextSpan(
           text: label,
           style: TextStyle(
             fontSize: 12,
             color: lineSeries.color,
           ),
         );
-        _axisLabelPainter.layout();
-        _axisLabelPainter.paint(
+        multipleYAxisLabelPainter.layout();
+        multipleYAxisLabelPainter.paint(
             canvas,
-            Offset(newLeftOffset - _axisLabelPainter.width - 2,
-                scaleY - _axisLabelPainter.height / 2));
+            Offset(newLeftOffset - multipleYAxisLabelPainter.width - 2,
+                scaleY - multipleYAxisLabelPainter.height / 2));
       }
     }
   }
@@ -285,8 +314,8 @@ class LineChartPainter extends CustomPainter {
     required Size size,
     required double xStep,
   }) {
-    int nonNullValueIndex = longestLineSeriesX.dataList
-        .indexWhere((element) => element.value != null);
+    int nonNullValueIndex =
+        longestLineSeriesX.dataList.indexWhere((element) => element.y != null);
     // 如果 line series value 全部都是 null,就不用畫 track ball
     // 如果 至少有 value 不是 null, 就要畫
     if (nonNullValueIndex != -1) {
@@ -294,37 +323,41 @@ class LineChartPainter extends CustomPainter {
       if (showMultipleYAxises) {
         double newLeftOffset = 40 * (lineSeriesXCollection.length - 1);
         adjustedLongPressX = longPressX - newLeftOffset;
-        adjustedLongPressX =
-            adjustedLongPressX.clamp(0.0, size.width - rightOffset);
+        adjustedLongPressX = adjustedLongPressX.clamp(0.0, size.width);
       } else {
-        adjustedLongPressX = longPressX.clamp(0.0, size.width - rightOffset);
+        adjustedLongPressX = longPressX.clamp(0.0, size.width);
       }
 
-      DateTime? closestDateTime = _findClosestPoint(
+      // print('adjustedLongPressX: $adjustedLongPressX');
+
+      int? closestIndex = _findClosestIndex(
         x: adjustedLongPressX,
         offsetX: offset,
         xStep: xStep,
       );
 
-      if (closestDateTime != null) {
+      if (closestIndex != null) {
         // Draw vertical line at the closest point
         canvas.drawLine(
-          Offset(
-              (closestDateTime.difference(minDate!).inSeconds.toDouble() *
-                  xStep),
-              0),
-          Offset(
-              (closestDateTime.difference(minDate!).inSeconds.toDouble() *
-                  xStep),
-              size.height),
-          _verticalLinePaint,
+          Offset((closestIndex * xStep), 0),
+          Offset((closestIndex * xStep), size.height),
+          verticalLinePaint,
         );
 
-        String formatDateTime = _formatDate(closestDateTime);
-        List<Map<int, double?>> valueMapList =
-            _getValueByDateTime(closestDateTime);
+        String formatXLabel = '';
 
-        Map<int, String> tips = {-1: formatDateTime};
+        if (longestLineSeriesX.dataList[closestIndex].x is DateTime) {
+          DateTime closestDateTime =
+              longestLineSeriesX.dataList[closestIndex].x as DateTime;
+          formatXLabel = _formatDate(closestDateTime);
+        } else {
+          int closestX = longestLineSeriesX.dataList[closestIndex].x as int;
+          formatXLabel = closestX.toString();
+        }
+
+        List<Map<int, double?>> valueMapList = _getYByClosetIndex(closestIndex);
+
+        Map<int, String> tips = {-1: formatXLabel};
 
         for (Map<int, double?> valueMap in valueMapList) {
           MapEntry nameValueEntry = valueMap.entries.toList()[0];
@@ -349,16 +382,22 @@ class LineChartPainter extends CustomPainter {
 
         double rectWidth = _tipTextPainter.width;
 
-        double textX =
-            (closestDateTime.difference(minDate!).inSeconds.toDouble() *
-                    xStep) +
-                10;
+        double textX = (closestIndex * xStep) + 10;
         double textY = size.height / 2 - (14.0 * (tips.length + 1) + 4) / 2;
+
+        // 折線圖的左邊 offset
+        double lineSeriesLeftOffset = 0.0;
+        if (showMultipleYAxises) {
+          lineSeriesLeftOffset = 40.0 * (lineSeriesXCollection.length);
+        } else {
+          lineSeriesLeftOffset = leftOffset;
+        }
 
         double outOfBoundWidth = (textX - 4) +
             (rectWidth + 16) -
-            (size.width - rightOffset) +
+            (size.width - lineSeriesLeftOffset - rightOffset) +
             offset;
+        // print('offset: $offset');
         double adjustedTextX = outOfBoundWidth > 0 ? outOfBoundWidth : 0;
         Rect rect1 = Rect.fromLTWH(
           textX - 4 - adjustedTextX,
@@ -424,7 +463,7 @@ class LineChartPainter extends CustomPainter {
     required double yStep,
   }) {
     for (LineSeriesX lineSeriesX in lineSeriesXCollection) {
-      List<DateValuePair> data = lineSeriesX.dataList;
+      List<ValuePair> data = lineSeriesX.dataList;
       List<int> startIndex = lineSeriesX.startIndexes;
       Path linePath = Path();
 
@@ -435,14 +474,12 @@ class LineChartPainter extends CustomPainter {
         ..style = PaintingStyle.stroke;
 
       // find the first non null value
-      int firstIndex = data.indexWhere((element) => element.value != null);
+      int firstIndex = data.indexWhere((element) => element.y != null);
       if (firstIndex != -1) {
         for (int i = firstIndex; i < data.length; i++) {
-          double currentScaleX =
-              (data[i].dateTime.difference(minDate!).inSeconds * xStep);
-          double? currentScaleY = data[i].value == null
-              ? null
-              : (maxValue - data[i].value!) * yStep;
+          double currentScaleX = (i * xStep);
+          double? currentScaleY =
+              data[i].y == null ? null : (maxValue - data[i].y!) * yStep;
 
           if (currentScaleY != null) {
             if (i == firstIndex) {
@@ -469,7 +506,7 @@ class LineChartPainter extends CustomPainter {
     required double xStep,
   }) {
     for (int i = 0; i < lineSeriesXCollection.length; i++) {
-      List<DateValuePair> data = lineSeriesXCollection[i].dataList;
+      List<ValuePair> data = lineSeriesXCollection[i].dataList;
       if (data.isNotEmpty) {
         List<int> startIndex = lineSeriesXCollection[i].startIndexes;
         double yStep = size.height / yRanges[i];
@@ -482,15 +519,13 @@ class LineChartPainter extends CustomPainter {
           ..style = PaintingStyle.stroke;
 
         // 找到第一個 value 不是 null 的 index
-        int firstIndex = data.indexWhere((element) => element.value != null);
+        int firstIndex = data.indexWhere((element) => element.y != null);
         if (firstIndex != -1) {
           // line series value 不是全部都是 null, 至少有一個 value 不是null
           for (int j = firstIndex; j < data.length; j++) {
-            double currentScaleX =
-                (data[j].dateTime.difference(minDate!).inSeconds * xStep);
-            double? currentScaleY = data[j].value == null
-                ? null
-                : (maxValues[i] - data[j].value!) * yStep;
+            double currentScaleX = (j * xStep);
+            double? currentScaleY =
+                data[j].y == null ? null : (maxValues[i] - data[j].y!) * yStep;
 
             if (currentScaleY != null) {
               if (j == firstIndex) {
@@ -549,29 +584,36 @@ class LineChartPainter extends CustomPainter {
     }
 
     // current (left,top) => (0,0)
-    // canvas.save();
+    canvas.save();
+
+    double xStep = 0.0;
 
     if (showMultipleYAxises) {
       double newLeftOffset =
           leftOffset + 40 * (lineSeriesXCollection.length - 1);
-      canvas.clipRect(Rect.fromPoints(
-          Offset(newLeftOffset, 0),
-          Offset(
-              size.width + newLeftOffset - rightOffset + 1, size.height + 40)));
+      canvas.clipRect(Rect.fromPoints(Offset(newLeftOffset, 0),
+          Offset(size.width - rightOffset, size.height + 40)));
       canvas.translate(newLeftOffset + offset, 0);
+
+      // 如果沒有資料點, xRange = 0
+      if (xRange == 0) {
+        xStep = (size.width * scale - newLeftOffset - rightOffset - 0.5) / 1;
+      } else {
+        xStep = (size.width * scale - newLeftOffset - rightOffset - 0.5) /
+            (xRange - 1);
+      }
     } else {
       canvas.clipRect(Rect.fromPoints(Offset(leftOffset, 0),
-          Offset(size.width + leftOffset - rightOffset + 1, size.height + 40)));
+          Offset(size.width - rightOffset, size.height + 40)));
       canvas.translate(leftOffset + offset, 0);
-    }
 
-    double xStep = 0.0;
-
-    // 如果沒有資料點, xRange = 0
-    if (xRange == 0) {
-      xStep = (size.width * scale - rightOffset) / 1;
-    } else {
-      xStep = (size.width * scale - rightOffset) / xRange;
+      // 如果沒有資料點, xRange = 0
+      if (xRange == 0) {
+        xStep = (size.width * scale - leftOffset - rightOffset - 0.5) / 1;
+      } else {
+        xStep = (size.width * scale - leftOffset - rightOffset - 0.5) /
+            (xRange - 1);
+      }
     }
 
     if (xRange != 0) {
@@ -580,6 +622,21 @@ class LineChartPainter extends CustomPainter {
         size: size,
         xStep: xStep,
       );
+    }
+
+    canvas.restore();
+
+    canvas.save();
+    if (showMultipleYAxises) {
+      double newLeftOffset =
+          leftOffset + 40 * (lineSeriesXCollection.length - 1);
+      canvas.clipRect(Rect.fromPoints(Offset(newLeftOffset, 0),
+          Offset(size.width - rightOffset, size.height)));
+      canvas.translate(newLeftOffset + offset, 0);
+    } else {
+      canvas.clipRect(Rect.fromPoints(Offset(leftOffset, 0),
+          Offset(size.width - rightOffset, size.height)));
+      canvas.translate(leftOffset + offset, 0);
     }
 
     // Draw line series
@@ -597,7 +654,7 @@ class LineChartPainter extends CustomPainter {
       );
     }
 
-    if (showTooltip) {
+    if (showTrackball) {
       _drawTrackBall(
         canvas: canvas,
         size: size,
@@ -605,12 +662,12 @@ class LineChartPainter extends CustomPainter {
       );
     }
 
-    // canvas.restore();
+    canvas.restore();
   }
 
   @override
   bool shouldRepaint(LineChartPainter oldDelegate) {
-    return oldDelegate.showTooltip != showTooltip ||
+    return oldDelegate.showTrackball != showTrackball ||
         oldDelegate.longPressX != longPressX ||
         oldDelegate.scale != scale ||
         oldDelegate.offset != offset;

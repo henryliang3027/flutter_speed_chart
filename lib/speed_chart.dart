@@ -1,3 +1,3 @@
-library flutter_speed_chart;
+library speed_chart;
 
 export 'src/model.dart';

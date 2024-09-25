@@ -1,4 +1,4 @@
-List jsonData1_1 = [
+List jsonDataWithNull = [
   {"time": "2022-09-16 00:01:39", "value": "50.0"},
   {"time": "2022-09-16 00:11:39", "value": "26.4"},
   {"time": "2022-09-16 00:21:40", "value": "26.5"},

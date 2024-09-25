@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_chart/src/speed_line_chart.dart';
+import 'package:speed_chart/src/speed_line_chart.dart';
 
 class Legend extends StatelessWidget {
   const Legend({Key? key, required this.lineSeriesXCollection})
