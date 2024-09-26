@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:speed_chart/src/speed_line_chart.dart';
 
+/// An internal widget used to display the legend for the [SpeedLineChart].
+///
+/// The [Legend] class constructs a visual representation of each data series
+/// within the chart, showing the series' name and corresponding color.
+/// This widget is **not** exposed to the end-users of the `speed_chart` package
+/// and is intended for internal management of the chart's widget.
 class Legend extends StatelessWidget {
+  /// Creates a [Legend] widget.
+  ///
+  /// The [lineSeriesXCollection] parameter is required and must not be null.
+  /// It represents the collection of [LineSeriesX] instances that the legend
+  /// will display.
   const Legend({Key? key, required this.lineSeriesXCollection})
       : super(key: key);
 
+  /// A collection of [LineSeriesX] instances used to build the legend.
+  ///
+  /// Each [LineSeriesX] contains the necessary data.
   final List<LineSeriesX> lineSeriesXCollection;
 
   @override

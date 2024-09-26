@@ -4,7 +4,18 @@ import 'package:speed_chart/src/value_pair.dart';
 import 'package:speed_chart/src/speed_line_chart.dart';
 import 'package:intl/intl.dart';
 
+/// An internal [CustomPainter] responsible for rendering the line chart.
+///
+/// The [LineChartPainter] class handles all the drawing logic for the [SpeedLineChart],
+/// including axes, grid lines, data series, and interactive elements like trackballs.
+/// This painter is **not** exposed to the end-users of the `speed_chart` package
+/// and is intended for internal use within the package's implementation.
 class LineChartPainter extends CustomPainter {
+  /// Creates an instance of [_LineChartPainter].
+  ///
+  /// All parameters marked as `required` must be provided and are essential
+  /// for accurately rendering the chart.
+
   LineChartPainter({
     required this.lineSeriesXCollection,
     required this.longestLineSeriesX,
@@ -26,23 +37,58 @@ class LineChartPainter extends CustomPainter {
     required this.verticalLinePaint,
   });
 
+  /// A collection of [LineSeriesX] instances representing the data series to be plotted.
   final List<LineSeriesX> lineSeriesXCollection;
+
+  /// The [LineSeriesX] with the most data points, used for determining the X-axis range.
   final LineSeriesX longestLineSeriesX;
+
+  /// Indicates whether to display the trackball (interactive data point indicator).
   final bool showTrackball;
+
+  /// The X-coordinate position of the long press (for trackball).
   final double longPressX;
+
+  /// The left padding offset for the chart.
   final double leftOffset;
+
+  /// The right padding offset for the chart.
   final double rightOffset;
+
+  /// The horizontal offset for panning and scaling.
   final double offset;
+
+  /// The scaling factor for zooming.
   final double scale;
+
+  /// The minimum Y-axis value across all series.
   final double minValue;
+
+  /// The maximum Y-axis value across all series.
   final double maxValue;
+
+  /// The total range of X-axis values.
   final double xRange;
+
+  /// The total range of Y-axis values.
   final double yRange;
+
+  /// Indicates whether multiple Y-axes are displayed.
   final bool showMultipleYAxises;
+
+  /// A list of minimum Y-axis values for each series (used in multiple Y-axes).
   final List<double> minValues;
+
+  /// A list of maximum Y-axis values for each series (used in multiple Y-axes).
   final List<double> maxValues;
+
+  /// A list of Y-axis ranges for each series (used in multiple Y-axes).
   final List<double> yRanges;
+
+  /// The [Paint] object used for drawing axes.
   final Paint axisPaint;
+
+  /// The [Paint] object used for drawing vertical grid lines.
   final Paint verticalLinePaint;
 
   final TextPainter _axisLabelPainter = TextPainter(
