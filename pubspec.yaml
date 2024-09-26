@@ -1,6 +1,6 @@
 name: speed_chart
 description: An efficient line chart widget featuring interactive gestures for visualizing data.
-version: 1.0.3
+version: 1.0.4
 repository: https://github.com/henryliang3027/flutter_speed_chart.git
 
 environment:

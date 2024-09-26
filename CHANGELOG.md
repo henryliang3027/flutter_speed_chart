@@ -19,3 +19,7 @@
 ## [1.0.3] - 2024-09-26
 ### Changed
 - Update the changelog, documentation and example
+
+## [1.0.4] - 2024-09-26
+### Changed
+- Update the documentation
