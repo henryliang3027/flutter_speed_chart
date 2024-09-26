@@ -22,3 +22,7 @@
 ## [1.0.2] - 2024-09-25
 ### Changed
 - Update changelog
+
+## [1.0.3] - 2024-09-25
+### Changed
+- Update the changelog, documentation and example
