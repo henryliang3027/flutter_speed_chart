@@ -1,6 +1,6 @@
 # example
 
-A new Flutter project.
+A sppd chart example.
 
 ## Getting Started
 
