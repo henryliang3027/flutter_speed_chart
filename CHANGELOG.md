@@ -7,22 +7,15 @@
 3. Horizontal panning
 4. Draw a trackball containing a vertical line and corresponding data point on a long press event.
 
-### Fixed
-- N/A
-
-### Changed
-- N/A
-
 ## [1.0.1] - 2024-09-25
 ### Changed
 - Update github readme 
 - Update platform support list
 
-
 ## [1.0.2] - 2024-09-25
 ### Changed
 - Update changelog
 
-## [1.0.3] - 2024-09-25
+## [1.0.3] - 2024-09-26
 ### Changed
 - Update the changelog, documentation and example

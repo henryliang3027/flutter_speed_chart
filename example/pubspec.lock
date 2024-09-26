@@ -163,10 +163,11 @@ packages:
   speed_chart:
     dependency: "direct main"
     description:
-      path: ".."
-      relative: true
-    source: path
-    version: "1.0.3"
+      name: speed_chart
+      sha256: "84e61f29bdf5f2d42954c07c56adcf81d035e7132da69791f36bd9b9ffea6bf5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   stack_trace:
     dependency: transitive
     description:
