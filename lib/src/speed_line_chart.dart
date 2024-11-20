@@ -34,6 +34,11 @@ class SpeedLineChart extends StatefulWidget {
   final bool showMultipleYAxises;
   final bool showScaleThumbs;
 
+  /// custom values
+  final TextStyle axisTextStyle;
+  final TextStyle legendTextStyle;
+  final Color scaleThumbsColor;
+
   const SpeedLineChart({
     Key? key,
     required this.lineSeriesCollection,
@@ -41,6 +46,17 @@ class SpeedLineChart extends StatefulWidget {
     this.showLegend = true,
     this.showMultipleYAxises = false,
     this.showScaleThumbs = false,
+
+    /// custom values
+    this.axisTextStyle = const TextStyle(
+      color: Colors.black,
+      fontSize: 12,
+    ),
+    this.legendTextStyle = const TextStyle(
+      color: Colors.black,
+      fontSize: 12,
+    ),
+    this.scaleThumbsColor = Colors.black,
   }) : super(key: key);
 
   @override
@@ -354,7 +370,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     double widgetHeight = 200;
 
     final Paint axisPaint = Paint()
-      ..color = Theme.of(context).colorScheme.onSurface
+      ..color = widget.axisTextStyle.color!
       ..strokeWidth = 1;
 
     final Paint verticalLinePaint = Paint()
@@ -611,7 +627,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                     left: slidingButtonWidth / 2 + _leftSlidingBtnLeft,
                     right: slidingButtonWidth / 2 + _rightSlidingBtnRight,
                   ),
-                  color: Theme.of(context).colorScheme.primary,
+                  color: widget.scaleThumbsColor,
                   child: GestureDetector(
                     onHorizontalDragStart: _onSlidingBarHorizontalDragStart,
                     onHorizontalDragUpdate: _onSlidingBarHorizontalDragUpdate,
@@ -636,7 +652,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                     height: double.infinity,
                     width: slidingButtonWidth,
                     decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: widget.scaleThumbsColor,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white)
                         // borderRadius: BorderRadius.only(
@@ -671,7 +687,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                       height: double.infinity,
                       width: slidingButtonWidth,
                       decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: widget.scaleThumbsColor,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white)),
                       child: Icon(
@@ -741,10 +757,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       _textWidthPainter.text = TextSpan(
         text: maxLengthStr,
-        style: TextStyle(
-          fontSize: 12,
-          color: axisPaint.color,
-        ),
+        style: widget.axisTextStyle,
       );
 
       // Draw label
@@ -951,6 +964,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
             widget.showLegend
                 ? Legend(
                     lineSeriesXCollection: _lineSeriesXCollection,
+                    textStyle: widget.legendTextStyle,
                   )
                 : Container(),
           ],

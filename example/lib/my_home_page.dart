@@ -27,9 +27,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<LineSeries> _lineSeriesCollectionEmpty = [];
+  // List<LineSeries> _lineSeriesCollectionEmpty = [];
   List<LineSeries> _lineSeriesCollectionWithNull = [];
-  List<LineSeries> _lineSeriesCollection0 = [];
+  // List<LineSeries> _lineSeriesCollection0 = [];
   List<LineSeries> _lineSeriesCollection4 = [];
   List<LineSeries> _lineSeriesCollectionRF = [];
 
@@ -93,15 +93,15 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    _lineSeriesCollectionEmpty = [
-      _getChartData(
-        data: [],
-        color: Colors.red,
-        name: 'LineEmpty',
-        maxYAxisValue: 4000,
-        minYAxisValue: 0,
-      ),
-    ];
+    // _lineSeriesCollectionEmpty = [
+    //   _getChartData(
+    //     data: [],
+    //     color: Colors.red,
+    //     name: 'LineEmpty',
+    //     maxYAxisValue: 4000,
+    //     minYAxisValue: 0,
+    //   ),
+    // ];
 
     _lineSeriesCollectionWithNull = [
       _getChartData(
@@ -113,40 +113,40 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ];
 
-    _lineSeriesCollection0 = [
-      _getChartData(
-        data: [
-          {"time": "2022-09-16 00:51:38", "value": "300"},
-          {"time": "2022-09-16 00:41:39", "value": "30"},
-          {"time": "2022-09-16 01:01:38", "value": "22"},
-          {"time": "2022-09-16 00:52:28", "value": "20"},
-          {"time": "2022-09-16 03:41:39", "value": "70"},
-          {"time": "2022-09-16 01:03:38", "value": "62"},
-          {"time": "2022-09-16 02:51:38", "value": "-100"},
-          {"time": "2022-09-16 04:43:39", "value": "40"},
-          {"time": "2022-09-16 07:07:38", "value": "-30"},
-        ],
-        color: Colors.red,
-        name: 'Line0',
-        maxYAxisValue: 300,
-        minYAxisValue: -30,
-      ),
-      _getChartData(
-        data: [
-          {"time": "2022-09-16 00:51:38", "value": "100"},
-          {"time": "2022-09-16 00:41:39", "value": "23"},
-          {"time": "2022-09-16 01:01:38", "value": "45"},
-          {"time": "2022-09-16 00:52:28", "value": "87"},
-          {"time": "2022-09-16 03:41:39", "value": "67"},
-          {"time": "2022-09-16 01:03:38", "value": "78"},
-          {"time": "2022-09-16 02:51:38", "value": "-99"},
-          {"time": "2022-09-16 04:43:39", "value": "12"},
-          {"time": "2022-09-16 07:07:38", "value": "-24"},
-        ],
-        color: Colors.orange,
-        name: 'Line1',
-      ),
-    ];
+    // _lineSeriesCollection0 = [
+    //   _getChartData(
+    //     data: [
+    //       {"time": "2022-09-16 00:51:38", "value": "300"},
+    //       {"time": "2022-09-16 00:41:39", "value": "30"},
+    //       {"time": "2022-09-16 01:01:38", "value": "22"},
+    //       {"time": "2022-09-16 00:52:28", "value": "20"},
+    //       {"time": "2022-09-16 03:41:39", "value": "70"},
+    //       {"time": "2022-09-16 01:03:38", "value": "62"},
+    //       {"time": "2022-09-16 02:51:38", "value": "-100"},
+    //       {"time": "2022-09-16 04:43:39", "value": "40"},
+    //       {"time": "2022-09-16 07:07:38", "value": "-30"},
+    //     ],
+    //     color: Colors.red,
+    //     name: 'Line0',
+    //     maxYAxisValue: 300,
+    //     minYAxisValue: -30,
+    //   ),
+    //   _getChartData(
+    //     data: [
+    //       {"time": "2022-09-16 00:51:38", "value": "100"},
+    //       {"time": "2022-09-16 00:41:39", "value": "23"},
+    //       {"time": "2022-09-16 01:01:38", "value": "45"},
+    //       {"time": "2022-09-16 00:52:28", "value": "87"},
+    //       {"time": "2022-09-16 03:41:39", "value": "67"},
+    //       {"time": "2022-09-16 01:03:38", "value": "78"},
+    //       {"time": "2022-09-16 02:51:38", "value": "-99"},
+    //       {"time": "2022-09-16 04:43:39", "value": "12"},
+    //       {"time": "2022-09-16 07:07:38", "value": "-24"},
+    //     ],
+    //     color: Colors.orange,
+    //     name: 'Line1',
+    //   ),
+    // ];
 
     _lineSeriesCollection4 = [
       _getChartData(
@@ -225,6 +225,15 @@ class _MyHomePageState extends State<MyHomePage> {
               title: _lineSeriesCollectionRF[0].name,
               showLegend: false,
               showScaleThumbs: true,
+              legendTextStyle: const TextStyle(
+                color: Colors.green,
+                fontSize: 12,
+              ),
+              axisTextStyle: const TextStyle(
+                color: Colors.green,
+                fontSize: 12,
+              ),
+              scaleThumbsColor: Colors.green,
             ),
             const SizedBox(
               height: 30.0,

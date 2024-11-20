@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:speed_chart/src/speed_line_chart.dart';
 
 class Legend extends StatelessWidget {
-  const Legend({Key? key, required this.lineSeriesXCollection})
-      : super(key: key);
+  const Legend({
+    Key? key,
+    required this.lineSeriesXCollection,
+
+    /// custom legend textStyle
+    this.textStyle = const TextStyle(
+      color: Colors.black,
+      fontSize: 12,
+    ),
+  }) : super(key: key);
 
   final List<LineSeriesX> lineSeriesXCollection;
+
+  /// custom legend textStyle
+  final TextStyle textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +40,9 @@ class Legend extends StatelessWidget {
           ),
           Text(
             name,
+
+            /// add custom textStyle
+            style: textStyle,
           ),
         ],
       );

@@ -316,8 +316,8 @@ class LineChartPainter extends CustomPainter {
   }) {
     int nonNullValueIndex =
         longestLineSeriesX.dataList.indexWhere((element) => element.y != null);
-    // 如果 line series value 全部都是 null,就不用畫 track ball
-    // 如果 至少有 value 不是 null, 就要畫
+
+    // If all line series values are null, don't draw the trackball
     if (nonNullValueIndex != -1) {
       double adjustedLongPressX = 0.0;
       if (showMultipleYAxises) {
@@ -327,8 +327,6 @@ class LineChartPainter extends CustomPainter {
       } else {
         adjustedLongPressX = longPressX.clamp(0.0, size.width);
       }
-
-      // print('adjustedLongPressX: $adjustedLongPressX');
 
       int? closestIndex = _findClosestIndex(
         x: adjustedLongPressX,
@@ -345,7 +343,6 @@ class LineChartPainter extends CustomPainter {
         );
 
         String formatXLabel = '';
-
         if (longestLineSeriesX.dataList[closestIndex].x is DateTime) {
           DateTime closestDateTime =
               longestLineSeriesX.dataList[closestIndex].x as DateTime;
@@ -356,15 +353,13 @@ class LineChartPainter extends CustomPainter {
         }
 
         List<Map<int, double?>> valueMapList = _getYByClosetIndex(closestIndex);
-
         Map<int, String> tips = {-1: formatXLabel};
 
         for (Map<int, double?> valueMap in valueMapList) {
           MapEntry nameValueEntry = valueMap.entries.toList()[0];
           if (nameValueEntry.value != null) {
             tips[nameValueEntry.key] =
-                '${lineSeriesXCollection[nameValueEntry.key].name} : ${nameValueEntry.value}'
-                    .toString();
+                '${lineSeriesXCollection[nameValueEntry.key].name} : ${nameValueEntry.value}';
           }
         }
 
@@ -380,12 +375,12 @@ class LineChartPainter extends CustomPainter {
 
         _tipTextPainter.layout();
 
-        double rectWidth = _tipTextPainter.width;
-
+        double rectWidth = _tipTextPainter.width + 16; // Add padding
+        double tooltipHeight =
+            14.0 * (tips.length + 1) + 8; // Adjust dynamic height
         double textX = (closestIndex * xStep) + 10;
-        double textY = size.height / 2 - (14.0 * (tips.length + 1) + 4) / 2;
+        double textY = size.height / 2 - tooltipHeight / 2;
 
-        // 折線圖的左邊 offset
         double lineSeriesLeftOffset = 0.0;
         if (showMultipleYAxises) {
           lineSeriesLeftOffset = 40.0 * (lineSeriesXCollection.length);
@@ -394,48 +389,47 @@ class LineChartPainter extends CustomPainter {
         }
 
         double outOfBoundWidth = (textX - 4) +
-            (rectWidth + 16) -
+            rectWidth -
             (size.width - lineSeriesLeftOffset - rightOffset) +
             offset;
-        // print('offset: $offset');
         double adjustedTextX = outOfBoundWidth > 0 ? outOfBoundWidth : 0;
-        Rect rect1 = Rect.fromLTWH(
+
+        Rect tooltipRect = Rect.fromLTWH(
           textX - 4 - adjustedTextX,
           textY,
-          rectWidth + 16,
-          12.0 * (tips.length + 1) +
-              4, // +1 for the date time string at the first row
+          rectWidth,
+          tooltipHeight,
         );
+
         Paint rectPaint = Paint()..color = Colors.white;
-        RRect rRect = RRect.fromRectAndRadius(rect1, const Radius.circular(4));
-        canvas.drawRRect(rRect, rectPaint);
+        RRect roundedTooltip =
+            RRect.fromRectAndRadius(tooltipRect, const Radius.circular(4));
+        canvas.drawRRect(roundedTooltip, rectPaint);
 
         _tipTextPainter.text = TextSpan(
-          text: tips[-1], // draw datetime
+          text: tips[-1], // Draw datetime
           style: const TextStyle(
             color: Colors.black,
           ),
         );
         _tipTextPainter.layout();
-
-        _tipTextPainter.paint(canvas, Offset(textX - adjustedTextX, textY));
+        _tipTextPainter.paint(canvas, Offset(textX - adjustedTextX, textY + 4));
 
         canvas.drawLine(
             Offset(textX - adjustedTextX, textY + 18),
-            Offset(textX - adjustedTextX - 8 + rectWidth + 16, textY + 18),
+            Offset(textX - adjustedTextX + rectWidth - 8, textY + 18),
             _dividerPaint);
 
-        textY = textY + 13;
-
+        double rowStartY = textY + 15; // Adjust spacing between rows
         int tipRowCount = 1;
         for (MapEntry entry in tips.entries) {
           if (entry.key != -1) {
             Paint circlePaint = Paint()
               ..color = lineSeriesXCollection[entry.key].color;
-            Offset center =
-                Offset(textX + 4 - adjustedTextX, textY + 14 * tipRowCount);
-            double radius = 4;
-            canvas.drawCircle(center, radius, circlePaint);
+
+            Offset circleCenter =
+                Offset(textX + 4 - adjustedTextX, rowStartY + 16 * tipRowCount);
+            canvas.drawCircle(circleCenter, 4, circlePaint);
 
             _tipTextPainter.text = TextSpan(
               text: entry.value,
@@ -446,9 +440,12 @@ class LineChartPainter extends CustomPainter {
             _tipTextPainter.layout();
 
             _tipTextPainter.paint(
-                canvas,
-                Offset(textX - adjustedTextX + 10,
-                    (textY + 14 * tipRowCount) - _tipTextPainter.height / 2));
+              canvas,
+              Offset(
+                textX - adjustedTextX + 10,
+                rowStartY + 16 * tipRowCount - _tipTextPainter.height / 2,
+              ),
+            );
 
             tipRowCount += 1;
           }
