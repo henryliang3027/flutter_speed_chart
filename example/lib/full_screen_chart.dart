@@ -72,7 +72,7 @@ void setPreferredOrientation() {
   double screenWidth = WidgetsBinding
       .instance.platformDispatcher.views.first.physicalSize.shortestSide;
 
-  print('screenWidth: $screenWidth');
+  debugPrint('screenWidth: $screenWidth');
 
   if (screenWidth <= 1440) {
     SystemChrome.setPreferredOrientations([
