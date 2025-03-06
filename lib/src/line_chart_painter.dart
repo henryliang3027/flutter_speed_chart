@@ -35,6 +35,7 @@ class LineChartPainter extends CustomPainter {
     required this.yRanges,
     required this.axisPaint,
     required this.verticalLinePaint,
+    this.xAxisUnit = '',
   });
 
   /// A collection of [LineSeriesX] instances representing the data series to be plotted.
@@ -90,6 +91,9 @@ class LineChartPainter extends CustomPainter {
 
   /// The [Paint] object used for drawing vertical grid lines.
   final Paint verticalLinePaint;
+
+  /// This unit is typically used in the tooltip to display the X axis unit.
+  final String xAxisUnit;
 
   final TextPainter _axisLabelPainter = TextPainter(
     textAlign: TextAlign.right,
@@ -398,7 +402,7 @@ class LineChartPainter extends CustomPainter {
           formatXLabel = _formatDate(closestDateTime);
         } else {
           int closestX = longestLineSeriesX.dataList[closestIndex].x as int;
-          formatXLabel = closestX.toString();
+          formatXLabel = '${closestX.toString()} $xAxisUnit';
         }
 
         List<Map<int, double?>> valueMapList = _getYByClosetIndex(closestIndex);

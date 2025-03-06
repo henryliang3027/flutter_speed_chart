@@ -95,6 +95,11 @@ class SpeedLineChart extends StatefulWidget {
   /// It is recommended to enabled this feature on the desktop platforms.
   final bool showScaleThumbs;
 
+  /// The display unit of the tooltip label.
+  ///
+  /// This unit is typically used in the tooltip to display the X axis unit.
+  final String xAxisUnit;
+
   /// Creates a [SpeedLineChart] widget.
   ///
   /// The [lineSeriesCollection] parameter is required and must not be null.
@@ -106,6 +111,7 @@ class SpeedLineChart extends StatefulWidget {
     this.showLegend = true,
     this.showMultipleYAxises = false,
     this.showScaleThumbs = false,
+    this.xAxisUnit = '',
   }) : super(key: key);
 
   @override
@@ -1004,6 +1010,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   yRanges: _yRanges,
                   axisPaint: axisPaint,
                   verticalLinePaint: verticalLinePaint,
+                  xAxisUnit: widget.xAxisUnit,
                 ),
               ),
             ),
