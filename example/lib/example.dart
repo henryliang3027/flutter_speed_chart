@@ -1,12 +1,6 @@
-import 'package:example/data_with_null.dart';
-import 'package:example/data_3.dart';
-import 'package:example/data_3_3.dart';
-import 'package:example/data_3_3_3.dart';
-import 'package:example/data_3_3_3_3.dart';
 import 'package:example/full_screen_chart.dart';
-import 'package:example/rf_data_1.dart';
 import 'package:flutter/material.dart';
-import 'package:speed_chart/speed_chart.dart';
+import 'package:flutter_speed_chart/speed_chart.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -27,11 +21,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<LineSeries> _lineSeriesCollectionEmpty = [];
-  List<LineSeries> _lineSeriesCollectionWithNull = [];
   List<LineSeries> _lineSeriesCollection0 = [];
-  List<LineSeries> _lineSeriesCollection4 = [];
-  List<LineSeries> _lineSeriesCollectionRF = [];
 
   LineSeries _getChartData({
     required List data,
@@ -44,8 +34,9 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < data.length; i++) {
       var d = data[i];
       DateTime dateTime = DateTime.parse(d['time'].toString());
-      double? value =
-          d['value'] == 'null' ? null : double.parse(d['value'].toString());
+      double? value = d['value'] == 'null'
+          ? null
+          : double.parse(d['value'].toString());
 
       dataList.add(ValuePair(x: dateTime, y: value));
     }
@@ -72,8 +63,9 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < data.length; i++) {
       var d = data[i];
       int freq = int.parse(d['freq'].toString());
-      double? level =
-          d['level'] == 'null' ? null : double.parse(d['level'].toString());
+      double? level = d['level'] == 'null'
+          ? null
+          : double.parse(d['level'].toString());
 
       dataList.add(ValuePair(x: freq, y: level));
     }
@@ -93,26 +85,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    _lineSeriesCollectionEmpty = [
-      _getChartData(
-        data: [],
-        color: Colors.red,
-        name: 'LineEmpty',
-        maxYAxisValue: 4000,
-        minYAxisValue: 0,
-      ),
-    ];
-
-    _lineSeriesCollectionWithNull = [
-      _getChartData(
-        data: jsonDataWithNull,
-        color: Colors.red,
-        name: 'Line',
-        maxYAxisValue: 60,
-        minYAxisValue: 0,
-      ),
-    ];
-
     _lineSeriesCollection0 = [
       _getChartData(
         data: [
@@ -122,14 +94,14 @@ class _MyHomePageState extends State<MyHomePage> {
           {"time": "2022-09-16 00:52:28", "value": "20"},
           {"time": "2022-09-16 03:41:39", "value": "70"},
           {"time": "2022-09-16 01:03:38", "value": "62"},
-          {"time": "2022-09-16 02:51:38", "value": "-100"},
+          {"time": "2022-09-16 02:51:38", "value": "155"},
           {"time": "2022-09-16 04:43:39", "value": "40"},
           {"time": "2022-09-16 07:07:38", "value": "-30"},
         ],
         color: Colors.red,
         name: 'Line0',
-        maxYAxisValue: 300,
-        minYAxisValue: -30,
+        maxYAxisValue: 360,
+        minYAxisValue: -60,
       ),
       _getChartData(
         data: [
@@ -139,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           {"time": "2022-09-16 00:52:28", "value": "87"},
           {"time": "2022-09-16 03:41:39", "value": "67"},
           {"time": "2022-09-16 01:03:38", "value": "78"},
-          {"time": "2022-09-16 02:51:38", "value": "-99"},
+          {"time": "2022-09-16 02:51:38", "value": "168"},
           {"time": "2022-09-16 04:43:39", "value": "12"},
           {"time": "2022-09-16 07:07:38", "value": "-24"},
         ],
@@ -147,40 +119,39 @@ class _MyHomePageState extends State<MyHomePage> {
         name: 'Line1',
       ),
     ];
-
-    _lineSeriesCollection4 = [
-      _getChartData(
-        data: jsonData3,
-        color: Colors.red,
-        name: 'Line1',
-      ),
-      _getChartData(
-        data: jsonData3_3,
-        color: Colors.orange,
-        name: 'Line2',
-      ),
-      _getChartData(
-        data: jsonData3_3_3,
-        color: Colors.green,
-        name: 'Line3',
-      ),
-      _getChartData(
-        data: jsonData3_3_3_3,
-        color: Colors.blue,
-        name: 'Line4',
-      ),
-    ];
-
-    _lineSeriesCollectionRF = [
-      _getGenericTypeChartData(
-        data: rfOutputs,
-        color: Colors.blue,
-        name: 'RFLevel',
-      ),
-    ];
   }
 
-  Widget fullScreen({required List<LineSeries> lineSeriesCollection}) {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.title)),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            _Counter(lineSeriesCollection: _lineSeriesCollection0),
+            _FullScreen(lineSeriesCollection: _lineSeriesCollection0),
+            SpeedLineChart(
+              lineSeriesCollection: _lineSeriesCollection0,
+              title: _lineSeriesCollection0[0].name,
+              showLegend: true,
+              showMultipleYAxises: false,
+              showScaleThumbs: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FullScreen extends StatelessWidget {
+  const _FullScreen({super.key, required this.lineSeriesCollection});
+
+  final List<LineSeries> lineSeriesCollection;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10.0),
       child: ElevatedButton(
@@ -199,96 +170,15 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.all(0.0),
           visualDensity: const VisualDensity(horizontal: -4.0, vertical: -3.0),
         ),
-        child: const Icon(
-          Icons.fullscreen_outlined,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollectionRF,
-            ),
-            fullScreen(lineSeriesCollection: _lineSeriesCollectionRF),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollectionRF,
-              title: _lineSeriesCollectionRF[0].name,
-              showLegend: false,
-              showScaleThumbs: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollection4,
-            ),
-            fullScreen(lineSeriesCollection: _lineSeriesCollection4),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection4,
-              showLegend: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            _Counter(
-              lineSeriesCollection: _lineSeriesCollectionWithNull,
-            ),
-            fullScreen(lineSeriesCollection: _lineSeriesCollectionWithNull),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollectionWithNull,
-              showLegend: true,
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            // ),
-            // fullScreen(lineSeriesCollection: _lineSeriesCollection0),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection0,
-            //   title: _lineSeriesCollection0[0].name,
-            //   showLegend: true,
-            //   showMultipleYAxises: false,
-            //   showScaleThumbs: true,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-            // _Counter(
-            //   lineSeriesCollection: _lineSeriesCollection1p8G1,
-            // ),
-            // fullScreen(lineSeriesCollection: _lineSeriesCollection1p8G1),
-            // SpeedLineChart(
-            //   lineSeriesCollection: _lineSeriesCollection1p8G1,
-            //   showLegend: true,
-            //   showScaleThumbs: true,
-            // ),
-            // const SizedBox(
-            //   height: 30.0,
-            // ),
-          ],
-        ),
+        child: const Icon(Icons.fullscreen_outlined),
       ),
     );
   }
 }
 
 class _Counter extends StatelessWidget {
-  const _Counter({
-    Key? key,
-    required this.lineSeriesCollection,
-  }) : super(key: key);
+  const _Counter({Key? key, required this.lineSeriesCollection})
+    : super(key: key);
 
   final List<LineSeries> lineSeriesCollection;
 
@@ -309,9 +199,7 @@ class _Counter extends StatelessWidget {
           children: <TextSpan>[
             const TextSpan(
               text: 'The number of points is: ',
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              style: TextStyle(fontSize: 16),
             ),
             TextSpan(
               text: getPointsCount(lineSeriesCollection).toString(),

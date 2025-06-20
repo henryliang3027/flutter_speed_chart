@@ -1,4 +1,4 @@
-import 'package:example/my_home_page.dart';
+import 'package:example/example.dart';
 import 'package:flutter/material.dart';
 
 void main() {

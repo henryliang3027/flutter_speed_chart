@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:speed_chart/src/constants.dart';
-import 'package:speed_chart/src/legend.dart';
-import 'package:speed_chart/src/line_chart_painter.dart';
-import 'package:speed_chart/src/line_series.dart';
-import 'package:speed_chart/src/value_pair.dart';
+import 'package:flutter_speed_chart/src/legend.dart';
+import 'package:flutter_speed_chart/src/line_chart_painter.dart';
+import 'package:flutter_speed_chart/src/line_series.dart';
+import 'package:flutter_speed_chart/src/value_pair.dart';
 
+/// Represents a single series of data points for a line chart.
+///
+/// This class is **internal** and used solely within the [speed_chart] package
+/// to manage data for the [SpeedLineChart].
 class LineSeriesX {
+  /// Creates a constant instance of [_LineSeriesX].
   const LineSeriesX({
     required this.name,
     required this.color,
@@ -18,22 +22,88 @@ class LineSeriesX {
     this.minYAxisValue,
   });
 
+  /// The display name of the series.
+  ///
+  /// This name is typically used in legends and trackball to identify the series.
   final String name;
+
+  /// The color used to render the series on the chart.
+  ///
+  /// Determines the visual appearance of the line representing this series.
   final Color color;
+
+  /// A list of [ValuePair] representing the data points of the series.
+  ///
+  /// Each [ValuePair] contains an X and Y value used to plot the points on
+  /// the chart.
   final List<ValuePair> dataList;
+
+  /// A map of dynamic keys to nullable double values representing additional data.
+  ///
+  /// This can be used for quick lookups of specific data points in the series.
   final Map<dynamic, double?> dataMap;
+
+  /// A list of starting indices for data points with null [y] values.
+  ///
+  /// Data series containing any data with null [y] values will not be rendered in the chart.
   final List<int> startIndexes;
+
+  /// The maximum value displayed on the Y-axis for this series.
+  ///
+  /// If not provided, the chart will automatically determine the maximum
+  /// value based on the data points.
   final double? maxYAxisValue;
+
+  /// The minimum value displayed on the Y-axis for this series.
+  ///
+  /// If not provided, the chart will automatically determine the minimum
+  /// value based on the data points.
   final double? minYAxisValue;
 }
 
+/// A customizable line chart widget for displaying multiple data series.
+///
+/// The [SpeedLineChart] widget renders a line chart based on the provided
+/// [lineSeriesCollection]. It offers various customization options such as
+/// displaying a title, legend, multiple Y-axes, and scale thumbs for
+/// zooming and panning.
 class SpeedLineChart extends StatefulWidget {
+  /// A collection of [LineSeries] to be plotted on the chart.
+  ///
+  /// Each [LineSeries] represents a distinct series of data points with its
+  /// own styling and configuration.
   final List<LineSeries> lineSeriesCollection;
+
+  /// The title displayed at the top of the chart.
+  ///
+  /// If left empty, no title will be shown.
   final String title;
+
+  /// Determines whether a legend is displayed on the chart.
+  ///
+  /// The legend typically shows the names and colors of each data series.
   final bool showLegend;
+
+  /// Indicates whether multiple Y-axes should be displayed.
+  ///
+  /// Useful when different series have varying scales and units.
   final bool showMultipleYAxises;
+
+  /// Enables or disables scale thumbs for zooming and panning.
+  ///
+  /// When enabled, users can interact with the chart to adjust the visible range of data
+  /// It is recommended to enabled this feature on the desktop platforms.
   final bool showScaleThumbs;
 
+  /// The display unit of the tooltip label.
+  ///
+  /// This unit is typically used in the tooltip to display the X axis unit.
+  final String xAxisUnit;
+
+  /// Creates a [SpeedLineChart] widget.
+  ///
+  /// The [lineSeriesCollection] parameter is required and must not be null.
+  /// The other parameters are optional and have default values.
   const SpeedLineChart({
     Key? key,
     required this.lineSeriesCollection,
@@ -41,6 +111,7 @@ class SpeedLineChart extends StatefulWidget {
     this.showLegend = true,
     this.showMultipleYAxises = false,
     this.showScaleThumbs = false,
+    this.xAxisUnit = '',
   }) : super(key: key);
 
   @override
@@ -75,10 +146,11 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
   late final List<LineSeriesX> _lineSeriesXCollection;
 
   // ==== 缩放滑钮
-  double _leftSlidingBtnLeft = 0.0;
-  double _lastLeftSlidingBtnLeft = 0.0;
-  double _rightSlidingBtnRight = 0.0;
-  double _lastRightSlidingBtnRight = 0.0;
+  final double _slidingButtonWidth = 30.0;
+  double _leftSlidingButtonLeft = 0.0;
+  double _lastLeftSlidingButtonLeft = 0.0;
+  double _rightSlidingButtonRight = 0.0;
+  double _lastRightSlidingButtonRight = 0.0;
 
   Timer? _onPressTimer;
 
@@ -104,21 +176,25 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
         }
       }
 
-      lineSeriesXCollection.add(LineSeriesX(
-        name: lineSeries.name,
-        color: lineSeries.color,
-        dataList: lineSeries.dataList, // reference
-        dataMap: dataMap,
-        startIndexes: startIndexes,
-        minYAxisValue: lineSeries.minYAxisValue,
-        maxYAxisValue: lineSeries.maxYAxisValue,
-      ));
+      lineSeriesXCollection.add(
+        LineSeriesX(
+          name: lineSeries.name,
+          color: lineSeries.color,
+          dataList: lineSeries.dataList, // reference
+          dataMap: dataMap,
+          startIndexes: startIndexes,
+          minYAxisValue: lineSeries.minYAxisValue,
+          maxYAxisValue: lineSeries.maxYAxisValue,
+        ),
+      );
     }
     return lineSeriesXCollection;
   }
 
-  double getMaximumYAxisValue(
-      {required double tempMaxValue, required double tempMinValue}) {
+  double getMaximumYAxisValue({
+    required double tempMaxValue,
+    required double tempMinValue,
+  }) {
     double maximumYAxisValue = 0.0;
 
     // in case of negative value
@@ -138,8 +214,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     return maximumYAxisValue;
   }
 
-  double getMinimumYAxisValue(
-      {required double tempMaxValue, required double tempMinValue}) {
+  double getMinimumYAxisValue({
+    required double tempMaxValue,
+    required double tempMinValue,
+  }) {
     double minimumYAxisValue = 0.0;
 
     // in case of negative values
@@ -336,8 +414,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
     _longestLineSeriesX = _lineSeriesXCollection
         .map((lineSeriesX) => lineSeriesX)
-        .reduce((value, element) =>
-            value.dataList.length > element.dataList.length ? value : element);
+        .reduce(
+          (value, element) =>
+              value.dataList.length > element.dataList.length ? value : element,
+        );
 
     if (widget.showMultipleYAxises) {
       setMinValueAndMaxValueForMultipleYAxis();
@@ -384,17 +464,15 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       if (_xRange == 0) {
         maxScale = (xStep + lineSeriesLeftOffset + _rightOffset) / widgetWidth;
       } else {
-        maxScale = (xStep * _xRange + lineSeriesLeftOffset + _rightOffset) /
+        maxScale =
+            (xStep * _xRange + lineSeriesLeftOffset + _rightOffset) /
             widgetWidth;
       }
 
       return maxScale;
     }
 
-    double calculateOffsetX(
-      double newScale,
-      double focusOnScreen,
-    ) {
+    double calculateOffsetX(double newScale, double focusOnScreen) {
       // original position : original total width = new position x : new total width
       // solve x
       double originalTotalWidth = _scale * widgetWidth;
@@ -408,8 +486,11 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       return focusOnScreen - newLocationInGraph;
     }
 
-    updateScaleAndScrolling(double newScale, double focusX,
-        {double extraX = 0.0}) {
+    updateScaleAndScrolling(
+      double newScale,
+      double focusX, {
+      double extraX = 0.0,
+    }) {
       double widgetWidth = context.size!.width;
 
       // 根據縮放焦點算出圖的起始點
@@ -425,8 +506,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       // 根據縮放, 同步縮放滑鈕的狀態
       double lineSeriesLeftOffset = getLineSeriesLeftOffset();
-      double maxViewportWidth = widgetWidth -
-          slidingButtonWidth * 2 -
+      double maxViewportWidth =
+          widgetWidth -
+          _slidingButtonWidth * 2 -
           lineSeriesLeftOffset -
           _rightOffset;
       double lOffsetX = -newOffsetX / _scale;
@@ -445,8 +527,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       setState(() {
         _scale = newScale;
         _offset = newOffsetX;
-        _leftSlidingBtnLeft = lOffsetX;
-        _rightSlidingBtnRight = rOffsetX;
+        _leftSlidingButtonLeft = lOffsetX;
+        _rightSlidingButtonRight = rOffsetX;
       });
     }
 
@@ -458,8 +540,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       // 同步縮放滑鈕的狀態
       double thumbControllerLeftOffset = getLineSeriesLeftOffset();
-      double maxViewportWidth = widgetWidth -
-          slidingButtonWidth * 2 -
+      double maxViewportWidth =
+          widgetWidth -
+          _slidingButtonWidth * 2 -
           thumbControllerLeftOffset -
           _rightOffset;
       double r = maxViewportWidth / widgetWidth;
@@ -486,8 +569,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       setState(() {
         _offset = newOffsetX;
-        _leftSlidingBtnLeft = lOffsetX;
-        _rightSlidingBtnRight = rOffsetX;
+        _leftSlidingButtonLeft = lOffsetX;
+        _rightSlidingButtonRight = rOffsetX;
       });
     }
 
@@ -496,22 +579,25 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     // 左邊按鈕的滑動操作
     _onLBHorizontalDragDown(DragStartDetails details) {
       // 按鈕的左側的x (起點) = 觸控的x軸座標 - 前一次按鈕的左側到左邊起點的滑動距離
-      _lastLeftSlidingBtnLeft = details.globalPosition.dx - _leftSlidingBtnLeft;
+      _lastLeftSlidingButtonLeft =
+          details.globalPosition.dx - _leftSlidingButtonLeft;
 
-      // print('_leftSlidingBtnLeft: ${_leftSlidingBtnLeft}');
+      // print('_leftSlidingButtonLeft: ${_leftSlidingButtonLeft}');
     }
 
     _onLBHorizontalDragUpdate(DragUpdateDetails details) {
       double widgetWidth = context.size!.width;
 
       double lineSeriesLeftOffseet = getLineSeriesLeftOffset();
-      double maxViewportWidth = widgetWidth -
-          slidingButtonWidth * 2 -
+      double maxViewportWidth =
+          widgetWidth -
+          _slidingButtonWidth * 2 -
           lineSeriesLeftOffseet -
           _rightOffset;
 
       // 按鈕新的offset = 觸控的x軸座標 - 按鈕的左側的x (起點)
-      double newLOffsetX = details.globalPosition.dx - _lastLeftSlidingBtnLeft;
+      double newLOffsetX =
+          details.globalPosition.dx - _lastLeftSlidingButtonLeft;
 
       // 根據最大縮放倍數, 限制滑動的最大距離
       // Viewport: 視窗指的是兩個滑桿(不含滑桿本身)中間的內容, 即左滑鈕的右邊到右滑鈕的左邊的距離.
@@ -520,12 +606,12 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       // 最大視窗寬 - 最小視窗寬 - 目前右邊的偏移量 = 目前左邊的最大偏移量
       double maxLeft =
-          maxViewportWidth - minViewportWidth - _rightSlidingBtnRight;
+          maxViewportWidth - minViewportWidth - _rightSlidingButtonRight;
       newLOffsetX = newLOffsetX.clamp(0.0, maxLeft);
 
       // 得到目前的視窗大小
       double viewportWidth =
-          maxViewportWidth - newLOffsetX - _rightSlidingBtnRight;
+          maxViewportWidth - newLOffsetX - _rightSlidingButtonRight;
 
       // print('maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
 
@@ -535,7 +621,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       double newOffsetX = calculateOffsetX(newScale, widgetWidth);
 
       setState(() {
-        _leftSlidingBtnLeft = newLOffsetX;
+        _leftSlidingButtonLeft = newLOffsetX;
         _scale = newScale;
         _offset = newOffsetX;
       });
@@ -546,33 +632,34 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     // 右邊按鈕的滑動操作
     _onRBHorizontalDragDown(DragStartDetails details) {
       // 按鈕的右側的x (起點) = 觸控的x軸座標 + 前一次按鈕的右側到右邊起點的滑動距離
-      _lastRightSlidingBtnRight =
-          details.globalPosition.dx + _rightSlidingBtnRight;
+      _lastRightSlidingButtonRight =
+          details.globalPosition.dx + _rightSlidingButtonRight;
       // print('details.globalPosition.dx: ${details.globalPosition.dx}');
-      // print('_rightSlidingBtnRight: ${_rightSlidingBtnRight}');
+      // print('_rightSlidingButtonRight: ${_rightSlidingButtonRight}');
     }
 
     _onRBHorizontalDragUpdate(DragUpdateDetails details) {
       double widgetWidth = context.size!.width;
 
       double lineSeriesLeftOffseet = getLineSeriesLeftOffset();
-      double maxViewportWidth = widgetWidth -
-          slidingButtonWidth * 2 -
+      double maxViewportWidth =
+          widgetWidth -
+          _slidingButtonWidth * 2 -
           lineSeriesLeftOffseet -
           _rightOffset;
 
       // 按鈕新的offset = 按鈕的右側的x (起點) - 觸控的x軸座標
       double newROffsetX =
-          _lastRightSlidingBtnRight - details.globalPosition.dx;
+          _lastRightSlidingButtonRight - details.globalPosition.dx;
 
       double minViewportWidth = maxViewportWidth / getMaxScale();
 
       double maxLeft =
-          maxViewportWidth - minViewportWidth - _leftSlidingBtnLeft;
+          maxViewportWidth - minViewportWidth - _leftSlidingButtonLeft;
       newROffsetX = newROffsetX.clamp(0.0, maxLeft);
 
       double viewportWidth =
-          maxViewportWidth - _leftSlidingBtnLeft - newROffsetX;
+          maxViewportWidth - _leftSlidingButtonLeft - newROffsetX;
 
       // print('maxViewportWidth: $maxViewportWidth, viewportWidth: $viewportWidth');
 
@@ -585,7 +672,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       double newOffsetX = calculateOffsetX(newScale, 0.0);
 
       setState(() {
-        _rightSlidingBtnRight = newROffsetX;
+        _rightSlidingButtonRight = newROffsetX;
         _scale = newScale;
         _offset = newOffsetX;
       });
@@ -596,7 +683,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
     Widget _buildThumbController() {
       return Padding(
         padding: EdgeInsets.only(
-            left: getLineSeriesLeftOffset(), right: _rightOffset),
+          left: getLineSeriesLeftOffset(),
+          right: _rightOffset,
+        ),
         child: SizedBox(
           width: double.infinity,
           height: 48.0,
@@ -608,8 +697,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   width: double.infinity,
                   height: 16,
                   margin: EdgeInsets.only(
-                    left: slidingButtonWidth / 2 + _leftSlidingBtnLeft,
-                    right: slidingButtonWidth / 2 + _rightSlidingBtnRight,
+                    left: _slidingButtonWidth / 2 + _leftSlidingButtonLeft,
+                    right: _slidingButtonWidth / 2 + _rightSlidingButtonRight,
                   ),
                   color: Theme.of(context).colorScheme.primary,
                   child: GestureDetector(
@@ -622,33 +711,23 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
               // left sliding button
               Container(
-                width: slidingButtonWidth + _leftSlidingBtnLeft,
+                width: _slidingButtonWidth + _leftSlidingButtonLeft,
                 height: double.infinity,
-                padding: EdgeInsets.only(left: _leftSlidingBtnLeft),
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                ),
+                padding: EdgeInsets.only(left: _leftSlidingButtonLeft),
+                decoration: const BoxDecoration(color: Colors.transparent),
                 child: GestureDetector(
                   onHorizontalDragStart: _onLBHorizontalDragDown,
                   onHorizontalDragUpdate: _onLBHorizontalDragUpdate,
                   onHorizontalDragEnd: _onLBHorizontalDragEnd,
                   child: Container(
                     height: double.infinity,
-                    width: slidingButtonWidth,
+                    width: _slidingButtonWidth,
                     decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white)
-                        // borderRadius: BorderRadius.only(
-                        //     topRight: Radius.circular(40.0),
-                        //     bottomRight: Radius.circular(40.0),
-                        //     topLeft: Radius.circular(40.0),
-                        //     bottomLeft: Radius.circular(40.0)),
-                        ),
-                    child: Icon(
-                      Icons.chevron_left,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white),
                     ),
+                    child: const Icon(Icons.chevron_left, color: Colors.white),
                   ),
                 ),
               ),
@@ -656,12 +735,10 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Container(
-                  width: slidingButtonWidth + _rightSlidingBtnRight,
-                  padding: EdgeInsets.only(right: _rightSlidingBtnRight),
+                  width: _slidingButtonWidth + _rightSlidingButtonRight,
+                  padding: EdgeInsets.only(right: _rightSlidingButtonRight),
                   height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                  ),
+                  decoration: const BoxDecoration(color: Colors.transparent),
                   alignment: Alignment.centerLeft,
                   child: GestureDetector(
                     onHorizontalDragStart: _onRBHorizontalDragDown,
@@ -669,12 +746,13 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                     onHorizontalDragEnd: _onRBHorizontalDragEnd,
                     child: Container(
                       height: double.infinity,
-                      width: slidingButtonWidth,
+                      width: _slidingButtonWidth,
                       decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white)),
-                      child: Icon(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white),
+                      ),
+                      child: const Icon(
                         Icons.chevron_right,
                         color: Colors.white,
                       ),
@@ -707,8 +785,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       // 同步縮放滑鈕的狀態
       double thumbControllerLeftOffset = getLineSeriesLeftOffset();
-      double maxViewportWidth = widgetWidth -
-          slidingButtonWidth * 2 -
+      double maxViewportWidth =
+          widgetWidth -
+          _slidingButtonWidth * 2 -
           thumbControllerLeftOffset -
           _rightOffset;
       double lOffsetX = -newOffsetX / _scale;
@@ -721,8 +800,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       // 因為使用 LayoutBuilder 所以不需要調用 setState
       // setState(() {
       _offset = newOffsetX;
-      _leftSlidingBtnLeft = lOffsetX;
-      _rightSlidingBtnRight = rOffsetX;
+      _leftSlidingButtonLeft = lOffsetX;
+      _rightSlidingButtonRight = rOffsetX;
       // });
     }
 
@@ -731,8 +810,9 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
       String minValueStr = _minValue.toStringAsFixed(0);
 
       // ex: 300 >= -30, 參考 300 的字串長度來決定 _leftOffset
-      String maxLengthStr =
-          maxValueStr.length >= minValueStr.length ? maxValueStr : minValueStr;
+      String maxLengthStr = maxValueStr.length >= minValueStr.length
+          ? maxValueStr
+          : minValueStr;
 
       final TextPainter _textWidthPainter = TextPainter(
         textAlign: TextAlign.right,
@@ -741,10 +821,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
 
       _textWidthPainter.text = TextSpan(
         text: maxLengthStr,
-        style: TextStyle(
-          fontSize: 12,
-          color: axisPaint.color,
-        ),
+        style: TextStyle(fontSize: 12, color: axisPaint.color),
       );
 
       // Draw label
@@ -771,9 +848,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   )
                 : Container(),
             widget.showScaleThumbs ? _buildThumbController() : Container(),
-            SizedBox(
-              height: widget.showScaleThumbs ? 16 : 0,
-            ),
+            SizedBox(height: widget.showScaleThumbs ? 16 : 0),
             GestureDetector(
               onScaleStart: (details) {
                 // print('Scale start');
@@ -804,8 +879,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
               },
               onScaleUpdate: (details) {
                 // newScale >= 1.0, 否則計算 left.clamp((newScale - 1) * -widgetWidth, 0.0) 時範圍會錯誤
-                print(
-                    'Scale update ${details.focalPoint.dx}, ${_lastUpdateFocalPointX}');
+                // print(
+                //     'Scale update ${details.focalPoint.dx}, ${_lastUpdateFocalPointX}');
 
                 if (_showTrackball) {
                   setState(() {
@@ -825,12 +900,14 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   double lineSeriesLeftOffseet = getLineSeriesLeftOffset();
 
                   if (_xRange == 0) {
-                    xStep = (widgetWidth * newScale -
+                    xStep =
+                        (widgetWidth * newScale -
                             lineSeriesLeftOffseet -
                             _rightOffset) /
                         1;
                   } else {
-                    xStep = (widgetWidth * newScale -
+                    xStep =
+                        (widgetWidth * newScale -
                             lineSeriesLeftOffseet -
                             _rightOffset) /
                         (_xRange - 1);
@@ -841,8 +918,11 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   // xStep 要小於整個 chart 的寬度
                   if (xStep <
                       widgetWidth - lineSeriesLeftOffseet - _rightOffset) {
-                    updateScaleAndScrolling(newScale, _focalPointX,
-                        extraX: _deltaFocalPointX);
+                    updateScaleAndScrolling(
+                      newScale,
+                      _focalPointX,
+                      extraX: _deltaFocalPointX,
+                    );
                   }
                 }
               },
@@ -861,8 +941,8 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                 });
               },
               onTapDown: (details) {
-                print('onTapDown');
-                _onPressTimer ??= Timer(Duration(milliseconds: 200), () {
+                // print('onTapDown');
+                _onPressTimer ??= Timer(const Duration(milliseconds: 200), () {
                   // 時間到的時候判斷按下是否有移動, 如果沒有則顯示 trackball
                   // print('timer ${_deltaFocalPointX}');
                   if (_deltaFocalPointX == 0) {
@@ -919,10 +999,7 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                 // print('onVerticalDragCancel');
               },
               child: CustomPaint(
-                size: Size(
-                  widgetWidth,
-                  widgetHeight,
-                ),
+                size: Size(widgetWidth, widgetHeight),
                 painter: LineChartPainter(
                   lineSeriesXCollection: _lineSeriesXCollection,
                   longestLineSeriesX: _longestLineSeriesX,
@@ -942,16 +1019,13 @@ class _SpeedLineChartState extends State<SpeedLineChart> {
                   yRanges: _yRanges,
                   axisPaint: axisPaint,
                   verticalLinePaint: verticalLinePaint,
+                  xAxisUnit: widget.xAxisUnit,
                 ),
               ),
             ),
-            const SizedBox(
-              height: 40.0,
-            ),
+            const SizedBox(height: 40.0),
             widget.showLegend
-                ? Legend(
-                    lineSeriesXCollection: _lineSeriesXCollection,
-                  )
+                ? Legend(lineSeriesXCollection: _lineSeriesXCollection)
                 : Container(),
           ],
         );

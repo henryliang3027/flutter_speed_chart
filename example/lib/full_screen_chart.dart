@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:speed_chart/speed_chart.dart';
+import 'package:flutter_speed_chart/speed_chart.dart';
 
 class FullScreenChartForm extends StatefulWidget {
   const FullScreenChartForm({
@@ -42,12 +42,7 @@ class _FullScreenChartFormState extends State<FullScreenChartForm> {
         setPreferredOrientation();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.title,
-          ),
-          centerTitle: true,
-        ),
+        appBar: AppBar(title: Text(widget.title), centerTitle: true),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -70,9 +65,14 @@ class _FullScreenChartFormState extends State<FullScreenChartForm> {
 
 void setPreferredOrientation() {
   double screenWidth = WidgetsBinding
-      .instance.platformDispatcher.views.first.physicalSize.shortestSide;
+      .instance
+      .platformDispatcher
+      .views
+      .first
+      .physicalSize
+      .shortestSide;
 
-  print('screenWidth: $screenWidth');
+  // print('screenWidth: $screenWidth');
 
   if (screenWidth <= 1440) {
     SystemChrome.setPreferredOrientations([
