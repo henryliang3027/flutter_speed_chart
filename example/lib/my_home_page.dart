@@ -1,4 +1,9 @@
+import 'package:example/data_3.dart';
+import 'package:example/data_3_3.dart';
+import 'package:example/data_3_3_3.dart';
+import 'package:example/data_3_3_3_3.dart';
 import 'package:example/full_screen_chart.dart';
+import 'package:example/rf_data_1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_chart/speed_chart.dart';
 
@@ -22,8 +27,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<LineSeries> _lineSeriesCollection0 = [];
+  List<LineSeries> _lineSeriesCollection1 = [];
 
-  LineSeries _getChartData({
+  LineSeries _getDateTimeTypeChartData({
     required List data,
     required Color color,
     required String name,
@@ -34,9 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < data.length; i++) {
       var d = data[i];
       DateTime dateTime = DateTime.parse(d['time'].toString());
-      double? value = d['value'] == 'null'
-          ? null
-          : double.parse(d['value'].toString());
+      double? value =
+          d['value'] == 'null' ? null : double.parse(d['value'].toString());
 
       dataList.add(ValuePair(x: dateTime, y: value));
     }
@@ -63,9 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < data.length; i++) {
       var d = data[i];
       int freq = int.parse(d['freq'].toString());
-      double? level = d['level'] == 'null'
-          ? null
-          : double.parse(d['level'].toString());
+      double? level =
+          d['level'] == 'null' ? null : double.parse(d['level'].toString());
 
       dataList.add(ValuePair(x: freq, y: level));
     }
@@ -86,37 +90,35 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     _lineSeriesCollection0 = [
-      _getChartData(
-        data: [
-          {"time": "2022-09-16 00:51:38", "value": "300"},
-          {"time": "2022-09-16 00:41:39", "value": "30"},
-          {"time": "2022-09-16 01:01:38", "value": "22"},
-          {"time": "2022-09-16 00:52:28", "value": "20"},
-          {"time": "2022-09-16 03:41:39", "value": "70"},
-          {"time": "2022-09-16 01:03:38", "value": "62"},
-          {"time": "2022-09-16 02:51:38", "value": "155"},
-          {"time": "2022-09-16 04:43:39", "value": "40"},
-          {"time": "2022-09-16 07:07:38", "value": "-30"},
-        ],
+      _getDateTimeTypeChartData(
+        data: jsonData3,
         color: Colors.red,
         name: 'Line0',
-        maxYAxisValue: 360,
+        maxYAxisValue: 160,
         minYAxisValue: -60,
       ),
-      _getChartData(
-        data: [
-          {"time": "2022-09-16 00:51:38", "value": "100"},
-          {"time": "2022-09-16 00:41:39", "value": "23"},
-          {"time": "2022-09-16 01:01:38", "value": "45"},
-          {"time": "2022-09-16 00:52:28", "value": "87"},
-          {"time": "2022-09-16 03:41:39", "value": "67"},
-          {"time": "2022-09-16 01:03:38", "value": "78"},
-          {"time": "2022-09-16 02:51:38", "value": "168"},
-          {"time": "2022-09-16 04:43:39", "value": "12"},
-          {"time": "2022-09-16 07:07:38", "value": "-24"},
-        ],
+      _getDateTimeTypeChartData(
+        data: jsonData3_3,
         color: Colors.orange,
         name: 'Line1',
+      ),
+      _getDateTimeTypeChartData(
+        data: jsonData3_3_3,
+        color: Colors.green,
+        name: 'Line2',
+      ),
+      _getDateTimeTypeChartData(
+        data: jsonData3_3_3_3,
+        color: Colors.indigo,
+        name: 'Line3',
+      ),
+    ];
+
+    _lineSeriesCollection1 = [
+      _getGenericTypeChartData(
+        data: rfOutputs,
+        color: Colors.red,
+        name: 'Line0',
       ),
     ];
   }
@@ -125,20 +127,32 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            _Counter(lineSeriesCollection: _lineSeriesCollection0),
-            _FullScreen(lineSeriesCollection: _lineSeriesCollection0),
-            SpeedLineChart(
-              lineSeriesCollection: _lineSeriesCollection0,
-              title: _lineSeriesCollection0[0].name,
-              showLegend: true,
-              showMultipleYAxises: false,
-              showScaleThumbs: true,
-            ),
-          ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              _Counter(lineSeriesCollection: _lineSeriesCollection0),
+              _FullScreen(lineSeriesCollection: _lineSeriesCollection0),
+              SpeedLineChart(
+                lineSeriesCollection: _lineSeriesCollection0,
+                title: '日期數據',
+                showLegend: true,
+                showMultipleYAxises: false,
+                showScaleThumbs: true,
+              ),
+              Divider(thickness: 6, color: Colors.grey[400]),
+              _Counter(lineSeriesCollection: _lineSeriesCollection1),
+              _FullScreen(lineSeriesCollection: _lineSeriesCollection1),
+              SpeedLineChart(
+                lineSeriesCollection: _lineSeriesCollection1,
+                title: '頻率與強度數據',
+                showLegend: true,
+                showMultipleYAxises: false,
+                showScaleThumbs: true,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -197,10 +211,7 @@ class _Counter extends StatelessWidget {
         text: TextSpan(
           style: const TextStyle(color: Colors.black),
           children: <TextSpan>[
-            const TextSpan(
-              text: 'The number of points is: ',
-              style: TextStyle(fontSize: 16),
-            ),
+            const TextSpan(text: '總數據點: ', style: TextStyle(fontSize: 16)),
             TextSpan(
               text: getPointsCount(lineSeriesCollection).toString(),
               style: const TextStyle(color: Colors.red, fontSize: 20),
